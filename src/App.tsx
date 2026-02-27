@@ -1,0 +1,306 @@
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
+
+import { RecentLessonsPanel } from "./components/RecentLessonsPanel";
+import { StudentRoster } from "./components/StudentRoster";
+import { LessonEntryForm } from "./components/LessonEntryForm";
+import { StageProgressPanel } from "./components/StageProgressPanel";
+import { WeakestManeuversPanel } from "./components/WeakestManeuversPanel";
+import { StudentHeader } from "./components/StudentHeader";
+
+import type { LicenseType, Student } from "./models/student";
+import type { LessonEntry, Maneuver, LessonStatus } from "./models/lesson";
+
+import { recommendNextLesson } from "./engine/recommendation";
+import { computeUnlockedStage } from "./engine/stageUnlock";
+import {
+  collectManeuvers,
+  computeSnapshotMetrics,
+  formatRecommendation,
+} from "./utils/appHelpers.ts";
+import { getStageLockReason } from "./utils/stageProgress";
+import { loadAppState, loadLessons, saveAppState, saveLessons } from "./utils/storage";
+
+const noticeCardStyle: CSSProperties = {
+  padding: 16,
+  background: "#1b2a4a",
+  borderRadius: 12,
+  boxShadow: "0 2px 8px #1976d222",
+  color: "#42a5f5",
+  fontSize: 16,
+  textAlign: "center",
+};
+
+const lockedChipStyle: CSSProperties = {
+  marginLeft: 8,
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontSize: 11,
+  background: "#7f1d1d",
+  border: "1px solid #ef444466",
+  color: "#fecaca",
+};
+
+const lockedReasonStyle: CSSProperties = {
+  marginTop: 6,
+  fontSize: 12,
+  color: "#fca5a5",
+};
+
+export default function App() {
+  const initial = useMemo(loadAppState, []);
+  const [students, setStudents] = useState<Student[]>(initial.students);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    initial.selectedStudentId
+  );
+  const [selectedStage, setSelectedStage] = useState<number>(1);
+
+  const [lessons, setLessons] = useState<LessonEntry[]>(() => loadLessons());
+
+  const patternOnlyDay = false;
+  const recencyWindow = 30;
+
+  useEffect(() => {
+    saveAppState({ students, selectedStudentId });
+  }, [students, selectedStudentId]);
+
+  useEffect(() => {
+    saveLessons(lessons);
+  }, [lessons]);
+
+  const handleSelectStudent = (id: string) => {
+    setSelectedStudentId(id);
+  };
+
+  const handleAddStudent = (name: string, license: LicenseType) => {
+    const now = new Date().toISOString();
+    const student: Student = {
+      id: crypto.randomUUID(),
+      name,
+      license,
+      soloStatus: "pre-solo",
+      checklist: {
+        tsaA14: false,
+        iacra: false,
+        medical: false,
+        writtenTestPassed: false,
+      },
+      endorsements: {
+        soloEndorsementGiven: false,
+        soloEndorsementDateISO: null,
+      },
+      milestones: {
+        firstSoloCompleted: false,
+        firstSoloDateISO: null,
+      },
+      createdAtISO: now,
+      updatedAtISO: now,
+    };
+
+    setStudents((prev) => [...prev, student]);
+    setSelectedStudentId(student.id);
+  };
+
+  const handleEditStudent = (id: string, name: string, license: LicenseType) => {
+    const now = new Date().toISOString();
+    setStudents((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, name, license, updatedAtISO: now } : s))
+    );
+  };
+
+  const handleDeleteStudent = (id: string) => {
+    const ok = window.confirm("Delete this student?");
+    if (!ok) return;
+
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    setSelectedStudentId((prevSelected) => (prevSelected === id ? null : prevSelected));
+    setLessons((prev) => prev.filter((l) => l.studentId !== id));
+  };
+
+  const handleDeleteLesson = (lessonId: string) => {
+    setLessons((prev) => prev.filter((l) => l.id !== lessonId));
+  };
+
+  const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
+
+  const studentLessons = useMemo(() => {
+    if (!selectedStudent) return [];
+    return lessons
+      .filter((l) => l.studentId === selectedStudent.id)
+      .sort((a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime());
+  }, [lessons, selectedStudent]);
+
+  const currentStatus: LessonStatus | null = studentLessons[0]?.status ?? null;
+  const stagePhaseStatus = currentStatus ?? "No status yet";
+
+  const unlockedStage = useMemo(() => {
+    if (!selectedStudent) return 1;
+    return computeUnlockedStage(studentLessons, {
+      medical: selectedStudent.checklist.medical,
+      tsaA14: selectedStudent.checklist.tsaA14,
+    });
+  }, [selectedStudent, studentLessons]);
+
+  const snapshotMetrics = useMemo(() => computeSnapshotMetrics(studentLessons), [studentLessons]);
+
+  const recommendation = useMemo(() => {
+    if (!selectedStudent) return null;
+    return recommendNextLesson({
+      lessons: studentLessons,
+      unlockedStage,
+      patternOnlyDay,
+      recencyWindow,
+    });
+  }, [selectedStudent, studentLessons, unlockedStage, patternOnlyDay, recencyWindow]);
+
+  const recommendationLabel = formatRecommendation(recommendation);
+  const recommendedManeuver: Maneuver | null = recommendation?.maneuver ?? null;
+
+  const maneuvers: Maneuver[] = useMemo(
+    () => collectManeuvers(lessons, recommendedManeuver),
+    [lessons, recommendedManeuver]
+  );
+
+  const handleAddLesson = (input: Omit<LessonEntry, "id" | "studentId">) => {
+    if (!selectedStudent) return;
+
+    const newLesson: LessonEntry = {
+      id: crypto.randomUUID(),
+      studentId: selectedStudent.id,
+      ...input,
+    };
+
+    setLessons((prev) => [...prev, newLesson]);
+  };
+
+  const metrics = snapshotMetrics as {
+    avgScore?: number | null;
+    trend?: string;
+    totalLessons?: number;
+    lessonCount?: number;
+  };
+
+  const isStageLocked = (stageNumber: number) => stageNumber > unlockedStage;
+
+  const stages = [
+    { stageNumber: 1, title: "Ground School" },
+    { stageNumber: 2, title: "Solo" },
+    { stageNumber: 3, title: "Cross Country" },
+    { stageNumber: 4, title: "Flight Training" },
+    { stageNumber: 5, title: "Advanced Training" },
+  ];
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        maxWidth: 1400,
+        margin: "0 auto",
+        borderRadius: 24,
+        background: "rgba(20,30,60,0.98)",
+        boxShadow: "0 8px 32px 0 #1976d244",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <StudentHeader
+        selectedStudent={selectedStudent}
+        snapshotMetrics={snapshotMetrics}
+        recommendationLabel={recommendationLabel}
+        stagePhaseStatus={stagePhaseStatus}
+        unlockedStage={unlockedStage}
+        patternOnlyDay={patternOnlyDay}
+      />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(180px, 260px) 1fr",
+          gap: 16,
+          alignItems: "flex-start",
+        }}
+      >
+        <StudentRoster
+          students={students}
+          selectedStudentId={selectedStudentId}
+          onSelect={handleSelectStudent}
+          onAdd={handleAddStudent}
+          onEdit={handleEditStudent}
+          onDelete={handleDeleteStudent}
+        />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {!selectedStudent ? (
+            <div style={noticeCardStyle}>No student selected</div>
+          ) : (
+            <>
+              <LessonEntryForm
+                key={selectedStudent.id}
+                recommended={recommendedManeuver}
+                maneuvers={maneuvers}
+                onSubmit={handleAddLesson}
+              />
+
+              {currentStatus ? (
+                <StageProgressPanel unlockedStage={unlockedStage} status={currentStatus} />
+              ) : (
+                <div style={noticeCardStyle}>Log a lesson to see stage status.</div>
+              )}
+
+              <RecentLessonsPanel lessons={studentLessons} onDeleteLesson={handleDeleteLesson} />
+              <WeakestManeuversPanel lessons={studentLessons} />
+            </>
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        {selectedStudent ? (
+          <>
+            <div style={{ marginBottom: 8, color: "#bfdbfe", fontSize: 13 }}>
+              Selected Stage: {selectedStage}
+            </div>
+
+            {stages.map((stage) => {
+              const locked = isStageLocked(stage.stageNumber);
+              const isSelected = selectedStage === stage.stageNumber;
+
+              return (
+                <div key={stage.stageNumber} style={{ marginBottom: 10 }}>
+                  <button
+                    type="button"
+                    disabled={locked}
+                    title={locked ? getStageLockReason(stage.stageNumber, metrics) : ""}
+                    onClick={() => {
+                      if (locked) return;
+                      setSelectedStage(stage.stageNumber);
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border: isSelected ? "1px solid #93c5fd" : "1px solid #42a5f544",
+                      background: locked ? "#1f2937" : isSelected ? "#1d4ed8" : "#1f3a66",
+                      color: locked ? "#9ca3af" : "#dbeafe",
+                      cursor: locked ? "not-allowed" : "pointer",
+                      opacity: locked ? 0.75 : 1,
+                    }}
+                  >
+                    Stage {stage.stageNumber}: {stage.title}
+                    {locked ? <span style={lockedChipStyle}>Locked</span> : null}
+                  </button>
+
+                  {locked ? (
+                    <div style={lockedReasonStyle}>
+                      {getStageLockReason(stage.stageNumber, metrics)}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
