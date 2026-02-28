@@ -23,6 +23,7 @@ import {
 import { getStageLockReason } from "./utils/stageProgress";
 import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
 import { createBackupJson, parseBackupJson } from "./utils/backup";
+import type { BackupPayloadV1 } from "./utils/backup";
 
 const noticeCardStyle: CSSProperties = {
   padding: 16,
@@ -151,17 +152,33 @@ export default function App() {
     try {
       const raw = await file.text();
       const payload = parseBackupJson(raw);
-
-      setStudents(payload.appState.students);
-      setSelectedStudentId(payload.appState.selectedStudentId);
-      setLessons(payload.lessons);
-      setSettings(payload.settings);
-      window.alert("Backup imported.");
+      setPendingImport({ fileName: file.name, payload });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to import backup.";
       window.alert(message);
     }
   };
+
+  const handleConfirmImport = () => {
+    if (!pendingImport) return;
+    const { payload } = pendingImport;
+
+    setStudents(payload.appState.students);
+    setSelectedStudentId(payload.appState.selectedStudentId);
+    setLessons(payload.lessons);
+    setSettings(payload.settings);
+    setPendingImport(null);
+    window.alert("Backup imported.");
+  };
+
+  const handleCancelImport = () => {
+    setPendingImport(null);
+  };
+
+  const [pendingImport, setPendingImport] = useState<{
+    fileName: string;
+    payload: BackupPayloadV1;
+  } | null>(null);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
 
@@ -258,6 +275,19 @@ export default function App() {
         onChange={setSettings}
         onExportBackup={handleExportBackup}
         onImportBackup={handleImportBackup}
+        pendingImportSummary={
+          pendingImport
+            ? {
+                fileName: pendingImport.fileName,
+                studentCount: pendingImport.payload.appState.students.length,
+                lessonCount: pendingImport.payload.lessons.length,
+                patternOnlyDay: pendingImport.payload.settings.patternOnlyDay,
+                recencyWindow: pendingImport.payload.settings.recencyWindow,
+              }
+            : null
+        }
+        onConfirmImport={handleConfirmImport}
+        onCancelImport={handleCancelImport}
       />
 
       <div

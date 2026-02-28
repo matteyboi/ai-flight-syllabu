@@ -1,10 +1,21 @@
 import type { AppSettings } from "../models/settings";
 
+type ImportSummary = {
+  fileName: string;
+  studentCount: number;
+  lessonCount: number;
+  patternOnlyDay: boolean;
+  recencyWindow: number;
+};
+
 type SettingsPanelProps = {
   settings: AppSettings;
   onChange: (next: AppSettings) => void;
   onExportBackup: () => void;
   onImportBackup: (file: File) => void | Promise<void>;
+  pendingImportSummary: ImportSummary | null;
+  onConfirmImport: () => void;
+  onCancelImport: () => void;
 };
 
 export function SettingsPanel({
@@ -12,6 +23,9 @@ export function SettingsPanel({
   onChange,
   onExportBackup,
   onImportBackup,
+  pendingImportSummary,
+  onConfirmImport,
+  onCancelImport,
 }: SettingsPanelProps) {
   return (
     <div style={{ padding: 12, borderRadius: 10, background: "#1f3a66" }}>
@@ -59,6 +73,35 @@ export function SettingsPanel({
           <span>Import Backup</span>
         </label>
       </div>
+
+      {pendingImportSummary ? (
+        <div
+          style={{
+            marginTop: 10,
+            padding: 10,
+            borderRadius: 8,
+            background: "#0f274a",
+            border: "1px solid #3b82f6",
+          }}
+        >
+          <div style={{ fontSize: 12, marginBottom: 6 }}>
+            Ready to import: <strong>{pendingImportSummary.fileName}</strong>
+          </div>
+          <div style={{ fontSize: 12, marginBottom: 8 }}>
+            Students: {pendingImportSummary.studentCount} · Lessons: {pendingImportSummary.lessonCount} ·
+            Pattern-only: {pendingImportSummary.patternOnlyDay ? "On" : "Off"} ·
+            Recency: {pendingImportSummary.recencyWindow} days
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={onConfirmImport}>
+              Confirm Import (Overwrite)
+            </button>
+            <button type="button" onClick={onCancelImport}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
