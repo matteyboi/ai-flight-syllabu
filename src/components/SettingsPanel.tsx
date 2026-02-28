@@ -1,44 +1,38 @@
-import type { SchoolSettings } from "../models/settings";
+import type { AppSettings } from "../models/settings";
 
-type Props = {
-  settings: SchoolSettings;
-  onChange: (next: SchoolSettings) => void;
+type SettingsPanelProps = {
+  settings: AppSettings;
+  onChange: (next: AppSettings) => void;
 };
 
-export function SettingsPanel({ settings, onChange }: Props) {
+export function SettingsPanel({ settings, onChange }: SettingsPanelProps) {
   return (
-    <div
-      style={{
-        marginTop: 16,
-        padding: 16,
-        border: "2px solid #111",
-        borderRadius: 12,
-        background: "#fff",
-        color: "#111",
-      }}
-    >
-      <h2 style={{ marginTop: 0 }}>School Settings</h2>
-
-      <label style={{ display: "block" }}>
-        <div style={{ fontSize: 12, opacity: 0.8 }}>
-          Minimum hours before Solo Ready
-        </div>
+    <div style={{ padding: 12, borderRadius: 10, background: "#1f3a66" }}>
+      <label style={{ display: "block", marginBottom: 8 }}>
         <input
-          type="number"
-          value={settings.minSoloHours}
-          min={0}
-          step={0.5}
-          onChange={(e) =>
-            onChange({ ...settings, minSoloHours: Number(e.target.value) })
-          }
-          style={{ width: "100%", padding: 8, marginTop: 6 }}
-        />
+          type="checkbox"
+          checked={settings.patternOnlyDay}
+          onChange={(e) => onChange({ ...settings, patternOnlyDay: e.target.checked })}
+        />{" "}
+        Pattern-only day
       </label>
 
-      <div style={{ marginTop: 8, opacity: 0.8, fontSize: 12 }}>
-        This affects the Solo Readiness “READY FOR SOLO” verdict only. Endorsement
-        is still instructor-controlled.
-      </div>
+      <label style={{ display: "block", fontSize: 13 }}>
+        Recency window (days)
+        <input
+          type="number"
+          min={1}
+          max={180}
+          value={settings.recencyWindow}
+          onChange={(e) =>
+            onChange({
+              ...settings,
+              recencyWindow: Math.min(180, Math.max(1, Number(e.target.value) || 1)),
+            })
+          }
+          style={{ marginLeft: 8, width: 90 }}
+        />
+      </label>
     </div>
   );
 }

@@ -7,9 +7,11 @@ import { LessonEntryForm } from "./components/LessonEntryForm";
 import { StageProgressPanel } from "./components/StageProgressPanel";
 import { WeakestManeuversPanel } from "./components/WeakestManeuversPanel";
 import { StudentHeader } from "./components/StudentHeader";
+import { SettingsPanel } from "./components/SettingsPanel";
 
 import type { LicenseType, Student } from "./models/student";
 import type { LessonEntry, Maneuver, LessonStatus } from "./models/lesson";
+import type { AppSettings } from "./models/settings";
 
 import { recommendNextLesson } from "./engine/recommendation";
 import { computeUnlockedStage } from "./engine/stageUnlock";
@@ -19,7 +21,7 @@ import {
   formatRecommendation,
 } from "./utils/appHelpers.ts";
 import { getStageLockReason } from "./utils/stageProgress";
-import { loadAppState, loadLessons, saveAppState, saveLessons } from "./utils/storage";
+import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
 
 const noticeCardStyle: CSSProperties = {
   padding: 16,
@@ -49,16 +51,19 @@ const lockedReasonStyle: CSSProperties = {
 
 export default function App() {
   const initial = useMemo(loadAppState, []);
+  const initialSettings = useMemo(loadSettings, []);
+
   const [students, setStudents] = useState<Student[]>(initial.students);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     initial.selectedStudentId
   );
   const [selectedStage, setSelectedStage] = useState<number>(1);
+  const [settings, setSettings] = useState<AppSettings>(initialSettings);
 
   const [lessons, setLessons] = useState<LessonEntry[]>(() => loadLessons());
 
-  const patternOnlyDay = false;
-  const recencyWindow = 30;
+  const patternOnlyDay = settings.patternOnlyDay;
+  const recencyWindow = settings.recencyWindow;
 
   useEffect(() => {
     saveAppState({ students, selectedStudentId });
@@ -67,6 +72,10 @@ export default function App() {
   useEffect(() => {
     saveLessons(lessons);
   }, [lessons]);
+
+  useEffect(() => {
+    saveSettings(settings);
+  }, [settings]);
 
   const handleSelectStudent = (id: string) => {
     setSelectedStudentId(id);
@@ -209,6 +218,11 @@ export default function App() {
         stagePhaseStatus={stagePhaseStatus}
         unlockedStage={unlockedStage}
         patternOnlyDay={patternOnlyDay}
+      />
+
+      <SettingsPanel
+        settings={settings}
+        onChange={setSettings}
       />
 
       <div

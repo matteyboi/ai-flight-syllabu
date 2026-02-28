@@ -7,6 +7,8 @@ import {
   type PersistedAppState,
 } from "./storage";
 
+import { loadSettings, saveSettings } from "./storage";
+
 function createStorageMock(): Storage {
   const store = new Map<string, string>();
   return {
@@ -66,6 +68,16 @@ describe("storage", () => {
     const lessons = loadLessons();
     expect(lessons.length).toBe(1);
     expect(lessons[0].patternOnlyDay).toBe(false);
+  });
+
+  it("returns default settings when none are stored", () => {
+    expect(loadSettings()).toEqual({ patternOnlyDay: false, recencyWindow: 30 });
+  });
+
+  it("round-trips settings", () => {
+    const input = { patternOnlyDay: true, recencyWindow: 14 };
+    saveSettings(input);
+    expect(loadSettings()).toEqual(input);
   });
 
   it("round-trips current versioned app+lesson storage", () => {
