@@ -21,3 +21,9 @@ export type LessonEntry = {
   patternOnlyDay: boolean;
   status: LessonStatus;
 };
+
+export type SnapshotMetrics = {
+  lastLessonDate: string;
+  avgScore: number | null;
+  trend: "Improving" | "Declining" | "Steady" | "No trend yet" | "No scores yet";
+};

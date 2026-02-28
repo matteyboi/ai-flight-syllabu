@@ -41,8 +41,13 @@ export function CommandBar({ commands, isOpen, onOpenChange }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setQuery("");
-    setTimeout(() => inputRef.current?.focus(), 30);
+
+    const clearId = window.setTimeout(() => setQuery(""), 0);
+    const focusId = window.setTimeout(() => inputRef.current?.focus(), 30);
+    return () => {
+      window.clearTimeout(clearId);
+      window.clearTimeout(focusId);
+    };
   }, [isOpen]);
 
   const filtered = useMemo(() => {

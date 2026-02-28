@@ -1,4 +1,4 @@
-import type { LessonEntry, Maneuver } from "../models/lesson";
+import type { LessonEntry, Maneuver, SnapshotMetrics } from "../models/lesson";
 
 type LessonWithOptionalFields = LessonEntry & {
   score?: number;
@@ -6,28 +6,41 @@ type LessonWithOptionalFields = LessonEntry & {
   maneuvers?: Maneuver[];
 };
 
-export function computeSnapshotMetrics(studentLessons: LessonEntry[]) {
-  if (studentLessons.length === 0) {
+type ComputeSnapshotMetricsInput =
+  | LessonEntry[]
+  | {
+      lessons: LessonEntry[];
+      selectedStudent?: unknown; // accepted but not required by metrics computation
+    };
+
+export function computeSnapshotMetrics(input: ComputeSnapshotMetricsInput): SnapshotMetrics {
+  const lessons = Array.isArray(input) ? input : input.lessons;
+
+  if (lessons.length === 0) {
     return {
       lastLessonDate: "No lessons yet",
-      avgScore: null as number | null,
+      avgScore: null,
       trend: "No trend yet",
     };
   }
 
-  const lastDate = new Date(studentLessons[0].dateISO);
+  const sorted = [...lessons].sort(
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+  );
+
+  const lastDate = new Date(sorted[0].dateISO);
   const lastLessonDate = Number.isNaN(lastDate.getTime())
     ? "Unknown"
     : lastDate.toLocaleDateString();
 
-  const scored = studentLessons
+  const scored = sorted
     .map((l) => (l as LessonWithOptionalFields).score)
     .filter((s): s is number => typeof s === "number" && Number.isFinite(s));
 
   if (scored.length === 0) {
     return {
       lastLessonDate,
-      avgScore: null as number | null,
+      avgScore: null,
       trend: "No scores yet",
     };
   }

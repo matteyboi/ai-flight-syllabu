@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { RecentLessonsPanel } from "./components/RecentLessonsPanel";
 import { StudentRoster } from "./components/StudentRoster";
@@ -8,6 +7,7 @@ import { StageProgressPanel } from "./components/StageProgressPanel";
 import { WeakestManeuversPanel } from "./components/WeakestManeuversPanel";
 import { StudentHeader } from "./components/StudentHeader";
 import { SettingsPanel } from "./components/SettingsPanel";
+import type { BackupPayloadV1, BackupValidationReport } from "./utils/backup";
 
 import type { LicenseType, Student } from "./models/student";
 import type { LessonEntry, Maneuver, LessonStatus } from "./models/lesson";
@@ -19,7 +19,7 @@ import {
   collectManeuvers,
   computeSnapshotMetrics,
   formatRecommendation,
-} from "./utils/appHelpers.ts";
+} from "./utils/appHelpers";
 import { getStageLockReason } from "./utils/stageProgress";
 import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
 import {
@@ -27,7 +27,6 @@ import {
   parseBackupJson,
   validateBackupPayload,
 } from "./utils/backup";
-import type { BackupPayloadV1, BackupValidationReport } from "./utils/backup";
 
 type ImportSnapshot = {
   appState: {
@@ -38,24 +37,31 @@ type ImportSnapshot = {
   settings: AppSettings;
 };
 
+type SnapshotMetrics = ReturnType<typeof computeSnapshotMetrics>;
+
+const STAGES = [
+  { stageNumber: 1, title: "Ground School" },
+  { stageNumber: 2, title: "Solo" },
+  { stageNumber: 3, title: "Cross Country" },
+  { stageNumber: 4, title: "Flight Training" },
+  { stageNumber: 5, title: "Advanced Training" },
+] as const;
+
 const noticeCardStyle: CSSProperties = {
-  padding: 16,
-  background: "#1b2a4a",
+  background: "#1f2937",
+  border: "1px solid #42a5f544",
+  color: "#dbeafe",
   borderRadius: 12,
-  boxShadow: "0 2px 8px #1976d222",
-  color: "#42a5f5",
-  fontSize: 16,
-  textAlign: "center",
+  padding: 12,
 };
 
 const lockedChipStyle: CSSProperties = {
   marginLeft: 8,
+  fontSize: 12,
   padding: "2px 8px",
-  borderRadius: 999,
-  fontSize: 11,
-  background: "#7f1d1d",
-  border: "1px solid #ef444466",
-  color: "#fecaca",
+  borderRadius: 9999,
+  background: "#374151",
+  color: "#d1d5db",
 };
 
 const lockedReasonStyle: CSSProperties = {
@@ -64,9 +70,9 @@ const lockedReasonStyle: CSSProperties = {
   color: "#fca5a5",
 };
 
-export default function App() {
-  const initial = useMemo(loadAppState, []);
-  const initialSettings = useMemo(loadSettings, []);
+function App() {
+  const initial = useMemo(() => loadAppState(), []);
+  const initialSettings = useMemo(() => loadSettings(), []);
 
   const [students, setStudents] = useState<Student[]>(initial.students);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
@@ -74,8 +80,28 @@ export default function App() {
   );
   const [selectedStage, setSelectedStage] = useState<number>(1);
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
-
   const [lessons, setLessons] = useState<LessonEntry[]>(() => loadLessons());
+
+  const [pendingImport, setPendingImport] = useState<{
+    fileName: string;
+    payload: BackupPayloadV1;
+    validation: BackupValidationReport;
+  } | null>(null);
+
+  const [lastImportSnapshot, setLastImportSnapshot] = useState<ImportSnapshot | null>(null);
+
+  const applySnapshot = (snapshot: ImportSnapshot): void => {
+    setStudents(snapshot.appState.students);
+    setSelectedStudentId(snapshot.appState.selectedStudentId);
+    setLessons(snapshot.lessons);
+    setSettings(snapshot.settings);
+  };
+
+  const takeCurrentSnapshot = (): ImportSnapshot => ({
+    appState: { students, selectedStudentId },
+    lessons,
+    settings,
+  });
 
   const patternOnlyDay = settings.patternOnlyDay;
   const recencyWindow = settings.recencyWindow;
@@ -181,40 +207,19 @@ export default function App() {
     }
 
     const { payload } = pendingImport;
-
-    // snapshot current state before overwrite
-    setLastImportSnapshot({
-      appState: { students, selectedStudentId },
-      lessons,
-      settings,
+    setLastImportSnapshot(takeCurrentSnapshot());
+    applySnapshot({
+      appState: payload.appState,
+      lessons: payload.lessons,
+      settings: payload.settings,
     });
-
-    setStudents(payload.appState.students);
-    setSelectedStudentId(payload.appState.selectedStudentId);
-    setLessons(payload.lessons);
-    setSettings(payload.settings);
     setPendingImport(null);
     window.alert("Backup imported.");
   };
 
-  const handleUndoLastImport = () => {
-    if (!lastImportSnapshot) return;
-
-    setStudents(lastImportSnapshot.appState.students);
-    setSelectedStudentId(lastImportSnapshot.appState.selectedStudentId);
-    setLessons(lastImportSnapshot.lessons);
-    setSettings(lastImportSnapshot.settings);
-    setLastImportSnapshot(null);
-    window.alert("Import undone.");
-  };
-
-  const [pendingImport, setPendingImport] = useState<{
-    fileName: string;
-    payload: BackupPayloadV1;
-    validation: BackupValidationReport;
-  } | null>(null);
-
-  const [lastImportSnapshot, setLastImportSnapshot] = useState<ImportSnapshot | null>(null);
+  function handleCancelImport(): void {
+    setPendingImport(null);
+  }
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
 
@@ -229,14 +234,36 @@ export default function App() {
   const stagePhaseStatus = currentStatus ?? "No status yet";
 
   const unlockedStage = useMemo(() => {
-    if (!selectedStudent) return 1;
+    if (!selectedStudent) return 1; // default when no student selected
+
     return computeUnlockedStage(studentLessons, {
       medical: selectedStudent.checklist.medical,
       tsaA14: selectedStudent.checklist.tsaA14,
     });
   }, [selectedStudent, studentLessons]);
 
-  const snapshotMetrics = useMemo(() => computeSnapshotMetrics(studentLessons), [studentLessons]);
+  // Keep selectedStage valid when student/unlock state changes.
+  useEffect(() => {
+    if (!selectedStudent) return;
+
+    const id = window.setTimeout(() => {
+      setSelectedStage((prev) => {
+        const minStage = 1;
+        const maxStage = Math.max(minStage, unlockedStage);
+        const clamped = Math.min(Math.max(prev, minStage), maxStage);
+        return clamped === prev ? prev : clamped;
+      });
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, [selectedStudent, unlockedStage]);
+
+  const snapshotMetrics = useMemo(
+    () => computeSnapshotMetrics(studentLessons),
+    [studentLessons]
+  );
+
+  const metrics: SnapshotMetrics = snapshotMetrics;
 
   const recommendation = useMemo(() => {
     if (!selectedStudent) return null;
@@ -268,162 +295,171 @@ export default function App() {
     setLessons((prev) => [...prev, newLesson]);
   };
 
-  const metrics = snapshotMetrics as {
-    avgScore?: number | null;
-    trend?: string;
-    totalLessons?: number;
-    lessonCount?: number;
-  };
+  const isStageLocked = useCallback(
+    (stageNumber: number) => stageNumber > unlockedStage,
+    [unlockedStage]
+  );
 
-  const isStageLocked = (stageNumber: number) => stageNumber > unlockedStage;
+  const stageLockReasons = useMemo(() => {
+    return STAGES.reduce<Record<number, string>>((acc, stage) => {
+      const locked = isStageLocked(stage.stageNumber);
+      acc[stage.stageNumber] = locked ? getStageLockReason(stage.stageNumber, metrics) : "";
+      return acc;
+    }, {});
+  }, [isStageLocked, metrics]);
 
-  const stages = [
-    { stageNumber: 1, title: "Ground School" },
-    { stageNumber: 2, title: "Solo" },
-    { stageNumber: 3, title: "Cross Country" },
-    { stageNumber: 4, title: "Flight Training" },
-    { stageNumber: 5, title: "Advanced Training" },
-  ];
-
-  function handleCancelImport(): void {
-    throw new Error("Function not implemented.");
+  function handleUndoLastImport(): void {
+    if (!lastImportSnapshot) return;
+    applySnapshot(lastImportSnapshot);
+    setLastImportSnapshot(null);
+    setPendingImport(null);
   }
 
   return (
-    <div
-      style={{
-        padding: 16,
-        maxWidth: 1400,
-        margin: "0 auto",
-        borderRadius: 24,
-        background: "rgba(20,30,60,0.98)",
-        boxShadow: "0 8px 32px 0 #1976d244",
-        backdropFilter: "blur(8px)",
-      }}
-    >
-      <StudentHeader
-        selectedStudent={selectedStudent}
-        snapshotMetrics={snapshotMetrics}
-        recommendationLabel={recommendationLabel}
-        stagePhaseStatus={stagePhaseStatus}
-        unlockedStage={unlockedStage}
-        patternOnlyDay={patternOnlyDay}
-      />
-
-      <SettingsPanel
-        settings={settings}
-        onChange={setSettings}
-        onExportBackup={handleExportBackup}
-        onImportBackup={handleImportBackup}
-        pendingImportSummary={
-          pendingImport
-            ? {
-                fileName: pendingImport.fileName,
-                studentCount: pendingImport.payload.appState.students.length,
-                lessonCount: pendingImport.payload.lessons.length,
-                patternOnlyDay: pendingImport.payload.settings.patternOnlyDay,
-                recencyWindow: pendingImport.payload.settings.recencyWindow,
-              }
-            : null
-        }
-        importValidation={pendingImport?.validation ?? null}
-        canConfirmImport={pendingImport ? !pendingImport.validation.hasCriticalIssues : false}
-        onConfirmImport={handleConfirmImport}
-        onCancelImport={handleCancelImport}
-        canUndoImport={Boolean(lastImportSnapshot)}
-        onUndoLastImport={handleUndoLastImport}
-      />
-
+    <>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(180px, 260px) 1fr",
-          gap: 16,
-          alignItems: "flex-start",
+          padding: 16,
+          maxWidth: 1400,
+          margin: "0 auto",
+          borderRadius: 24,
+          background: "rgba(20,30,60,0.98)",
+          boxShadow: "0 8px 32px 0 #1976d244",
+          backdropFilter: "blur(8px)",
         }}
       >
-        <StudentRoster
-          students={students}
-          selectedStudentId={selectedStudentId}
-          onSelect={handleSelectStudent}
-          onAdd={handleAddStudent}
-          onEdit={handleEditStudent}
-          onDelete={handleDeleteStudent}
+        <StudentHeader
+          selectedStudent={selectedStudent}
+          snapshotMetrics={snapshotMetrics}
+          recommendationLabel={recommendationLabel}
+          stagePhaseStatus={stagePhaseStatus}
+          unlockedStage={unlockedStage}
+          patternOnlyDay={patternOnlyDay}
         />
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {!selectedStudent ? (
-            <div style={noticeCardStyle}>No student selected</div>
-          ) : (
+        <SettingsPanel
+          settings={settings}
+          onChange={setSettings}
+          onExportBackup={handleExportBackup}
+          onImportBackup={handleImportBackup}
+          pendingImportSummary={
+            pendingImport
+              ? {
+                  fileName: pendingImport.fileName,
+                  studentCount: pendingImport.payload.appState.students.length,
+                  lessonCount: pendingImport.payload.lessons.length,
+                  patternOnlyDay: pendingImport.payload.settings.patternOnlyDay,
+                  recencyWindow: pendingImport.payload.settings.recencyWindow,
+                }
+              : null
+          }
+          importValidation={pendingImport?.validation ?? null}
+          canConfirmImport={pendingImport ? !pendingImport.validation.hasCriticalIssues : false}
+          onConfirmImport={handleConfirmImport}
+          onCancelImport={handleCancelImport}
+          canUndoImport={Boolean(lastImportSnapshot)}
+          onUndoLastImport={handleUndoLastImport}
+        />
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(180px, 260px) 1fr",
+            gap: 16,
+            alignItems: "flex-start",
+          }}
+        >
+          <StudentRoster
+            students={students}
+            selectedStudentId={selectedStudentId}
+            onSelect={handleSelectStudent}
+            onAdd={handleAddStudent}
+            onEdit={handleEditStudent}
+            onDelete={handleDeleteStudent}
+          />
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {!selectedStudent ? (
+              <div style={noticeCardStyle}>No student selected</div>
+            ) : (
+              <>
+                <LessonEntryForm
+                  key={selectedStudent.id}
+                  recommended={recommendedManeuver}
+                  maneuvers={maneuvers}
+                  onSubmit={handleAddLesson}
+                />
+
+                {currentStatus ? (
+                  <StageProgressPanel unlockedStage={unlockedStage} status={currentStatus} />
+                ) : (
+                  <div style={noticeCardStyle}>Log a lesson to see stage status.</div>
+                )}
+
+                <RecentLessonsPanel lessons={studentLessons} onDeleteLesson={handleDeleteLesson} />
+                <WeakestManeuversPanel lessons={studentLessons} />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20 }}>
+          {selectedStudent ? (
             <>
-              <LessonEntryForm
-                key={selectedStudent.id}
-                recommended={recommendedManeuver}
-                maneuvers={maneuvers}
-                onSubmit={handleAddLesson}
-              />
+              <div style={{ marginBottom: 8, color: "#bfdbfe", fontSize: 13 }}>
+                Selected Stage: {selectedStage}
+              </div>
 
-              {currentStatus ? (
-                <StageProgressPanel unlockedStage={unlockedStage} status={currentStatus} />
-              ) : (
-                <div style={noticeCardStyle}>Log a lesson to see stage status.</div>
-              )}
+              {STAGES.map((stage) => {
+                const locked = isStageLocked(stage.stageNumber);
+                const isSelected = selectedStage === stage.stageNumber;
+                const lockReason = stageLockReasons[stage.stageNumber] ?? "";
 
-              <RecentLessonsPanel lessons={studentLessons} onDeleteLesson={handleDeleteLesson} />
-              <WeakestManeuversPanel lessons={studentLessons} />
+                return (
+                  <div key={stage.stageNumber} style={{ marginBottom: 10 }}>
+                    <button
+                      type="button"
+                      disabled={locked}
+                      title={lockReason}
+                      onClick={() => {
+                        if (locked) return;
+                        setSelectedStage(stage.stageNumber);
+                      }}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: isSelected ? "1px solid #93c5fd" : "1px solid #42a5f544",
+                        background: locked ? "#1f2937" : isSelected ? "#1d4ed8" : "#1f3a66",
+                        color: locked ? "#9ca3af" : "#dbeafe",
+                        cursor: locked ? "not-allowed" : "pointer",
+                        opacity: locked ? 0.75 : 1,
+                      }}
+                    >
+                      Stage {stage.stageNumber}: {stage.title}
+                      {locked ? <span style={lockedChipStyle}>Locked</span> : null}
+                    </button>
+
+                    {locked ? <div style={lockedReasonStyle}>{lockReason}</div> : null}
+                  </div>
+                );
+              })}
+
+              <div style={noticeCardStyle}>
+                <p>
+                  <strong>Next recommendation:</strong> {recommendationLabel}
+                </p>
+                <p>
+                  <strong>Recommended maneuver:</strong> {recommendedManeuver?.name ?? "No recommendation yet"}
+                </p>
+              </div>
             </>
-          )}
+          ) : null}
         </div>
       </div>
-
-      <div style={{ marginTop: 20 }}>
-        {selectedStudent ? (
-          <>
-            <div style={{ marginBottom: 8, color: "#bfdbfe", fontSize: 13 }}>
-              Selected Stage: {selectedStage}
-            </div>
-
-            {stages.map((stage) => {
-              const locked = isStageLocked(stage.stageNumber);
-              const isSelected = selectedStage === stage.stageNumber;
-
-              return (
-                <div key={stage.stageNumber} style={{ marginBottom: 10 }}>
-                  <button
-                    type="button"
-                    disabled={locked}
-                    title={locked ? getStageLockReason(stage.stageNumber, metrics) : ""}
-                    onClick={() => {
-                      if (locked) return;
-                      setSelectedStage(stage.stageNumber);
-                    }}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "10px 12px",
-                      borderRadius: 10,
-                      border: isSelected ? "1px solid #93c5fd" : "1px solid #42a5f544",
-                      background: locked ? "#1f2937" : isSelected ? "#1d4ed8" : "#1f3a66",
-                      color: locked ? "#9ca3af" : "#dbeafe",
-                      cursor: locked ? "not-allowed" : "pointer",
-                      opacity: locked ? 0.75 : 1,
-                    }}
-                  >
-                    Stage {stage.stageNumber}: {stage.title}
-                    {locked ? <span style={lockedChipStyle}>Locked</span> : null}
-                  </button>
-
-                  {locked ? (
-                    <div style={lockedReasonStyle}>
-                      {getStageLockReason(stage.stageNumber, metrics)}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </>
-        ) : null}
-      </div>
-    </div>
+    </>
   );
 }
+
+export default App;
