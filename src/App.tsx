@@ -22,6 +22,7 @@ import {
 } from "./utils/appHelpers.ts";
 import { getStageLockReason } from "./utils/stageProgress";
 import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
+import { createBackupJson, parseBackupJson } from "./utils/backup";
 
 const noticeCardStyle: CSSProperties = {
   padding: 16,
@@ -130,6 +131,38 @@ export default function App() {
     setLessons((prev) => prev.filter((l) => l.id !== lessonId));
   };
 
+  const handleExportBackup = () => {
+    const json = createBackupJson({
+      appState: { students, selectedStudentId },
+      lessons,
+      settings,
+    });
+
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ai-flight-syllabus-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportBackup = async (file: File) => {
+    try {
+      const raw = await file.text();
+      const payload = parseBackupJson(raw);
+
+      setStudents(payload.appState.students);
+      setSelectedStudentId(payload.appState.selectedStudentId);
+      setLessons(payload.lessons);
+      setSettings(payload.settings);
+      window.alert("Backup imported.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to import backup.";
+      window.alert(message);
+    }
+  };
+
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
 
   const studentLessons = useMemo(() => {
@@ -223,6 +256,8 @@ export default function App() {
       <SettingsPanel
         settings={settings}
         onChange={setSettings}
+        onExportBackup={handleExportBackup}
+        onImportBackup={handleImportBackup}
       />
 
       <div
