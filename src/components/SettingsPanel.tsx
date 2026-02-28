@@ -1,4 +1,5 @@
 import type { AppSettings } from "../models/settings";
+import type { BackupValidationReport } from "../utils/backup";
 
 type ImportSummary = {
   fileName: string;
@@ -13,9 +14,15 @@ type SettingsPanelProps = {
   onChange: (next: AppSettings) => void;
   onExportBackup: () => void;
   onImportBackup: (file: File) => void | Promise<void>;
-  pendingImportSummary: ImportSummary | null;
-  onConfirmImport: () => void;
-  onCancelImport: () => void;
+
+  pendingImportSummary?: ImportSummary | null;
+  importValidation?: BackupValidationReport | null;
+  canConfirmImport?: boolean;
+  onConfirmImport?: () => void;
+  onCancelImport?: () => void;
+
+  canUndoImport?: boolean;
+  onUndoLastImport?: () => void;
 };
 
 export function SettingsPanel({
@@ -23,9 +30,13 @@ export function SettingsPanel({
   onChange,
   onExportBackup,
   onImportBackup,
-  pendingImportSummary,
+  pendingImportSummary = null,
+  importValidation = null,
+  canConfirmImport = false,
   onConfirmImport,
   onCancelImport,
+  canUndoImport = false,
+  onUndoLastImport,
 }: SettingsPanelProps) {
   return (
     <div style={{ padding: 12, borderRadius: 10, background: "#1f3a66" }}>
@@ -59,6 +70,7 @@ export function SettingsPanel({
         <button type="button" onClick={onExportBackup}>
           Export Backup
         </button>
+
         <label style={{ cursor: "pointer" }}>
           <input
             type="file"
@@ -72,6 +84,12 @@ export function SettingsPanel({
           />
           <span>Import Backup</span>
         </label>
+
+        {canUndoImport && onUndoLastImport ? (
+          <button type="button" onClick={onUndoLastImport}>
+            Undo Last Import
+          </button>
+        ) : null}
       </div>
 
       {pendingImportSummary ? (
@@ -87,16 +105,38 @@ export function SettingsPanel({
           <div style={{ fontSize: 12, marginBottom: 6 }}>
             Ready to import: <strong>{pendingImportSummary.fileName}</strong>
           </div>
+
           <div style={{ fontSize: 12, marginBottom: 8 }}>
             Students: {pendingImportSummary.studentCount} · Lessons: {pendingImportSummary.lessonCount} ·
             Pattern-only: {pendingImportSummary.patternOnlyDay ? "On" : "Off"} ·
             Recency: {pendingImportSummary.recencyWindow} days
           </div>
+
+          {importValidation ? (
+            <div
+              style={{
+                fontSize: 12,
+                marginBottom: 8,
+                color: importValidation.hasCriticalIssues ? "#fecaca" : "#bbf7d0",
+              }}
+            >
+              Validation — invalid students: {importValidation.invalidStudents},
+              invalid lessons: {importValidation.invalidLessons},
+              duplicate student IDs: {importValidation.duplicateStudentIds},
+              duplicate lesson IDs: {importValidation.duplicateLessonIds},
+              unknown lesson refs: {importValidation.unknownStudentRefs}
+            </div>
+          ) : null}
+
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" onClick={onConfirmImport}>
+            <button
+              type="button"
+              onClick={() => onConfirmImport?.()}
+              disabled={!canConfirmImport}
+            >
               Confirm Import (Overwrite)
             </button>
-            <button type="button" onClick={onCancelImport}>
+            <button type="button" onClick={() => onCancelImport?.()}>
               Cancel
             </button>
           </div>

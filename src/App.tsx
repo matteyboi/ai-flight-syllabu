@@ -22,8 +22,21 @@ import {
 } from "./utils/appHelpers.ts";
 import { getStageLockReason } from "./utils/stageProgress";
 import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
-import { createBackupJson, parseBackupJson } from "./utils/backup";
-import type { BackupPayloadV1 } from "./utils/backup";
+import {
+  createBackupJson,
+  parseBackupJson,
+  validateBackupPayload,
+} from "./utils/backup";
+import type { BackupPayloadV1, BackupValidationReport } from "./utils/backup";
+
+type ImportSnapshot = {
+  appState: {
+    students: Student[];
+    selectedStudentId: string | null;
+  };
+  lessons: LessonEntry[];
+  settings: AppSettings;
+};
 
 const noticeCardStyle: CSSProperties = {
   padding: 16,
@@ -152,7 +165,8 @@ export default function App() {
     try {
       const raw = await file.text();
       const payload = parseBackupJson(raw);
-      setPendingImport({ fileName: file.name, payload });
+      const validation = validateBackupPayload(payload);
+      setPendingImport({ fileName: file.name, payload, validation });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to import backup.";
       window.alert(message);
@@ -161,7 +175,19 @@ export default function App() {
 
   const handleConfirmImport = () => {
     if (!pendingImport) return;
+    if (pendingImport.validation.hasCriticalIssues) {
+      window.alert("Import blocked: backup has validation issues.");
+      return;
+    }
+
     const { payload } = pendingImport;
+
+    // snapshot current state before overwrite
+    setLastImportSnapshot({
+      appState: { students, selectedStudentId },
+      lessons,
+      settings,
+    });
 
     setStudents(payload.appState.students);
     setSelectedStudentId(payload.appState.selectedStudentId);
@@ -171,14 +197,24 @@ export default function App() {
     window.alert("Backup imported.");
   };
 
-  const handleCancelImport = () => {
-    setPendingImport(null);
+  const handleUndoLastImport = () => {
+    if (!lastImportSnapshot) return;
+
+    setStudents(lastImportSnapshot.appState.students);
+    setSelectedStudentId(lastImportSnapshot.appState.selectedStudentId);
+    setLessons(lastImportSnapshot.lessons);
+    setSettings(lastImportSnapshot.settings);
+    setLastImportSnapshot(null);
+    window.alert("Import undone.");
   };
 
   const [pendingImport, setPendingImport] = useState<{
     fileName: string;
     payload: BackupPayloadV1;
+    validation: BackupValidationReport;
   } | null>(null);
+
+  const [lastImportSnapshot, setLastImportSnapshot] = useState<ImportSnapshot | null>(null);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
 
@@ -249,6 +285,10 @@ export default function App() {
     { stageNumber: 5, title: "Advanced Training" },
   ];
 
+  function handleCancelImport(): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div
       style={{
@@ -286,8 +326,12 @@ export default function App() {
               }
             : null
         }
+        importValidation={pendingImport?.validation ?? null}
+        canConfirmImport={pendingImport ? !pendingImport.validation.hasCriticalIssues : false}
         onConfirmImport={handleConfirmImport}
         onCancelImport={handleCancelImport}
+        canUndoImport={Boolean(lastImportSnapshot)}
+        onUndoLastImport={handleUndoLastImport}
       />
 
       <div
