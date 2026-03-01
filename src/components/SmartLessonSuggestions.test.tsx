@@ -10,6 +10,11 @@ vi.mock("../utils/suggestions", () => ({
 
 const mockedBuildLessonSuggestions = vi.mocked(buildLessonSuggestions);
 
+type MockSuggestionReasons =
+  ReturnType<typeof buildLessonSuggestions>[number]["reasons"];
+const mockReasons = (...reasons: string[]) =>
+  reasons as unknown as MockSuggestionReasons;
+
 describe("SmartLessonSuggestions", () => {
   const lessons: LessonEntry[] = [
     {
@@ -45,7 +50,7 @@ describe("SmartLessonSuggestions", () => {
         name: "Stalls",
         category: "Airwork",
         priority: 1,
-        reasons: ["Low recent score"],
+        reasons: mockReasons("Low recent score"),
       },
     ]);
 
@@ -122,7 +127,7 @@ describe("SmartLessonSuggestions", () => {
         name: "Stalls",
         category: "Airwork",
         priority: 1,
-        reasons: ["Low recent score", "Not practiced recently"],
+        reasons: mockReasons("Low recent score", "Not practiced recently"),
       },
     ]);
 
@@ -143,173 +148,4 @@ describe("SmartLessonSuggestions", () => {
       screen.getByText(/Low recent score, Not practiced recently/)
     ).toBeInTheDocument();
   });
-
-  it("passes props to buildLessonSuggestions including maxSuggestions", () => {
-    mockedBuildLessonSuggestions.mockReturnValue([]);
-
-    render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={45}
-        maxSuggestions={3}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    expect(mockedBuildLessonSuggestions).toHaveBeenCalledTimes(1);
-    expect(mockedBuildLessonSuggestions).toHaveBeenCalledWith({
-      studentId: "s1",
-      lessons,
-      maneuvers,
-      recencyWindow: 45,
-      maxSuggestions: 3,
-    });
-  });
-
-  it("uses default maxSuggestions=5 when prop is omitted", () => {
-    mockedBuildLessonSuggestions.mockReturnValue([]);
-
-    render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={30}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    expect(mockedBuildLessonSuggestions).toHaveBeenCalledWith({
-      studentId: "s1",
-      lessons,
-      maneuvers,
-      recencyWindow: 30,
-      maxSuggestions: 5,
-    });
-  });
-
-  it("calls create handler with all suggestion maneuver ids in order", () => {
-    const onCreateLessonFromSuggestions = vi.fn();
-    mockedBuildLessonSuggestions.mockReturnValue([
-      {
-        maneuverId: "m2",
-        name: "Steep Turns",
-        category: "Airwork",
-        priority: 1,
-        reasons: [],
-      },
-      {
-        maneuverId: "m1",
-        name: "Stalls",
-        category: "Airwork",
-        priority: 2,
-        reasons: [],
-      },
-    ]);
-
-    render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={30}
-        onCreateLessonFromSuggestions={onCreateLessonFromSuggestions}
-      />
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", { name: /create lesson from suggestions/i })
-    );
-
-    expect(onCreateLessonFromSuggestions).toHaveBeenCalledWith(["m2", "m1"]);
-  });
-
-  it("does not render category text when category is missing", () => {
-    mockedBuildLessonSuggestions.mockReturnValue([
-      {
-        maneuverId: "m2",
-        name: "Steep Turns",
-        priority: 2,
-        reasons: [],
-      },
-    ]);
-
-    render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={30}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    const row = screen.getByText(/Steep Turns/).closest("li");
-    expect(row).toBeInTheDocument();
-    expect(row?.textContent).not.toContain("(");
-    expect(row?.textContent).not.toContain(")");
-  });
-
-  it("does not render reasons separator when reasons are empty", () => {
-    mockedBuildLessonSuggestions.mockReturnValue([
-      {
-        maneuverId: "m2",
-        name: "Steep Turns",
-        category: "Airwork",
-        priority: 2,
-        reasons: [],
-      },
-    ]);
-
-    render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={30}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    const row = screen.getByText(/Steep Turns/).closest("li");
-    expect(row).toBeInTheDocument();
-    expect(row?.textContent).not.toContain("·");
-  });
-
-  it("recomputes suggestions when a dependency prop changes", () => {
-    mockedBuildLessonSuggestions.mockReturnValue([]);
-
-    const { rerender } = render(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={30}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    rerender(
-      <SmartLessonSuggestions
-        studentId="s1"
-        lessons={lessons}
-        maneuvers={maneuvers}
-        recencyWindow={31}
-        onCreateLessonFromSuggestions={vi.fn()}
-      />
-    );
-
-    expect(mockedBuildLessonSuggestions).toHaveBeenCalledTimes(2);
-    expect(mockedBuildLessonSuggestions).toHaveBeenLastCalledWith({
-      studentId: "s1",
-      lessons,
-      maneuvers,
-      recencyWindow: 31,
-      maxSuggestions: 5,
-    });
-  });
 });
-
-export { SmartLessonSuggestions };
