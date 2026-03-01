@@ -41,7 +41,6 @@ function mkLesson(
       maneuverId: s.maneuverId,
       score: toManeuverScore(s.score),
     })),
-    maneuver: undefined,
   };
 }
 
