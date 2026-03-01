@@ -23,6 +23,23 @@ function byNewestDate(a: LessonEntry, b: LessonEntry): number {
   return new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime();
 }
 
+function maneuverName(value: Maneuver | string | null | undefined): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && "name" in value) {
+    return String((value as { name?: unknown }).name ?? "");
+  }
+  return "";
+}
+
+const asManeuver = (value: string): Maneuver => value as unknown as Maneuver;
+
+const SOME_MANEUVER_LIST: Maneuver[] = [
+  asManeuver("Slow Flight"),
+  asManeuver("Power-Off Stalls"),
+  asManeuver("Turns Around a Point"),
+  asManeuver("S-Turns"),
+];
+
 export function buildTodaysTrainingPlan(
   input: BuildTodaysTrainingPlanInput
 ): TodaysTrainingPlan {
@@ -57,11 +74,27 @@ export function buildTodaysTrainingPlan(
   // 3) Rotation fallback from historical maneuvers
   const seen = collectManeuvers(sorted, null);
   if (seen.length > 0) {
+    const recentLesson = sorted[sorted.length - 1] as LessonWithOptionalFields | undefined;
+    const lastFlown =
+      recentLesson?.maneuver ??
+      (Array.isArray(recentLesson?.maneuvers) ? recentLesson.maneuvers[0] : undefined);
+
+    const lastName = maneuverName(lastFlown);
+
+    const currentIndex = KNOWN_MANEUVERS.findIndex(
+      (m) => maneuverName(m) === lastName
+    );
+
+    const nextManeuver =
+      currentIndex >= 0
+        ? KNOWN_MANEUVERS[(currentIndex + 1) % KNOWN_MANEUVERS.length]
+        : KNOWN_MANEUVERS[0];
+
     return {
-      item: seen[0],
-      reason: "Keeping skills current with rotation-based practice.",
-      confidence: 65,
+      item: nextManeuver,
       source: "rotation",
+      reason: "Continue maneuver rotation for balanced proficiency.",
+      confidence: 60,
     };
   }
 
@@ -73,3 +106,11 @@ export function buildTodaysTrainingPlan(
     source: "rotation",
   };
 }
+
+// Add this near top-level constants in the file
+const KNOWN_MANEUVERS: Maneuver[] = [
+  "Slow Flight" as unknown as Maneuver,
+  "Power-Off Stalls" as unknown as Maneuver,
+  "Turns Around a Point" as unknown as Maneuver,
+  "S-Turns" as unknown as Maneuver,
+];

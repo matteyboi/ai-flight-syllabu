@@ -6,9 +6,10 @@ function toManeuverScore(n: number): ManeuverScore {
   return n as ManeuverScore;
 }
 
+let lessonSeq = 1;
 function lesson(scores: Array<{ maneuverId: string; score: number }>): LessonEntry {
   return {
-    id: crypto.randomUUID(),
+    id: `lesson-${lessonSeq++}`,
     studentId: "s1",
     dateISO: new Date().toISOString(),
     status: "Dual" as LessonEntry["status"],
@@ -18,7 +19,8 @@ function lesson(scores: Array<{ maneuverId: string; score: number }>): LessonEnt
       maneuverId: s.maneuverId,
       score: toManeuverScore(s.score),
     })),
-  };
+    maneuver: undefined,
+  } as LessonEntry;
 }
 
 describe("computeUnlockedStage", () => {
@@ -64,7 +66,6 @@ describe("computeUnlockedStage", () => {
   });
 
   it("uses only a rolling window of 6 scores per maneuver group", () => {
-    // Newest-first lessons: provide at least 6 high scores for BOTH groups.
     const newestHigh = [
       lesson([{ maneuverId: "pattern-ops", score: 5 }, { maneuverId: "emergencies", score: 5 }]),
       lesson([{ maneuverId: "normal-takeoff", score: 5 }, { maneuverId: "emergencies", score: 5 }]),
@@ -74,7 +75,6 @@ describe("computeUnlockedStage", () => {
       lesson([{ maneuverId: "normal-landing", score: 5 }, { maneuverId: "emergencies", score: 5 }]),
     ];
 
-    // Older low scores should be ignored once window=6 is filled.
     const olderLow = [
       lesson([{ maneuverId: "pattern-ops", score: 1 }, { maneuverId: "emergencies", score: 1 }]),
       lesson([{ maneuverId: "normal-takeoff", score: 1 }, { maneuverId: "emergencies", score: 1 }]),
@@ -84,5 +84,97 @@ describe("computeUnlockedStage", () => {
     const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
 
     expect(stage).toBe(4);
+  });
+
+  it("does not unlock stage 4 when tsaA14 gate is false", () => {
+    const lessons = [
+      lesson([
+        { maneuverId: "pattern-ops", score: 5 },
+        { maneuverId: "normal-takeoff", score: 5 },
+        { maneuverId: "normal-landing", score: 5 },
+        { maneuverId: "go-around", score: 5 },
+        { maneuverId: "emergencies", score: 5 },
+      ]),
+    ];
+
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: false });
+    expect(stage).toBe(2);
+  });
+
+  it("stays stage 2 when emergency scores are missing", () => {
+    const lessons = [
+      lesson([
+        { maneuverId: "pattern-ops", score: 5 },
+        { maneuverId: "normal-takeoff", score: 5 },
+        { maneuverId: "normal-landing", score: 4 },
+        { maneuverId: "go-around", score: 4 },
+      ]),
+    ];
+
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
+    expect(stage).toBe(2);
+  });
+
+  it("stays stage 2 when pattern average is below 4", () => {
+    const lessons = [
+      lesson([
+        { maneuverId: "pattern-ops", score: 3 },
+        { maneuverId: "normal-takeoff", score: 3 },
+        { maneuverId: "normal-landing", score: 4 },
+        { maneuverId: "go-around", score: 3 },
+        { maneuverId: "emergencies", score: 5 },
+      ]),
+    ];
+
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
+    expect(stage).toBe(2);
+  });
+
+  it("unlocks stage 4 when averages are exactly 4", () => {
+    const lessons = [
+      lesson([
+        { maneuverId: "pattern-ops", score: 3 },
+        { maneuverId: "normal-takeoff", score: 4 },
+        { maneuverId: "normal-landing", score: 5 },
+        { maneuverId: "go-around", score: 4 },
+        { maneuverId: "emergencies", score: 4 },
+      ]),
+    ];
+
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
+    expect(stage).toBe(4);
+  });
+
+  it("ignores unrelated maneuvers for stage-4 gating", () => {
+    const lessons = [
+      lesson([
+        { maneuverId: "steep-turns", score: 5 },
+        { maneuverId: "slow-flight", score: 5 },
+      ]),
+    ];
+
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
+    expect(stage).toBe(2);
+  });
+
+  it("uses newest scores first in the rolling window", () => {
+    const newestLow = [
+      lesson([{ maneuverId: "pattern-ops", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+      lesson([{ maneuverId: "normal-takeoff", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+      lesson([{ maneuverId: "normal-landing", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+      lesson([{ maneuverId: "go-around", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+      lesson([{ maneuverId: "pattern-ops", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+      lesson([{ maneuverId: "normal-landing", score: 2 }, { maneuverId: "emergencies", score: 2 }]),
+    ];
+
+    const olderHigh = [
+      lesson([{ maneuverId: "pattern-ops", score: 5 }, { maneuverId: "emergencies", score: 5 }]),
+      lesson([{ maneuverId: "normal-takeoff", score: 5 }, { maneuverId: "emergencies", score: 5 }]),
+    ];
+
+    const lessons = [...newestLow, ...olderHigh];
+    const stage = computeUnlockedStage(lessons, { medical: true, tsaA14: true });
+
+    expect(stage).toBe(2);
   });
 });

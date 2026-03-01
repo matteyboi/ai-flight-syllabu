@@ -13,6 +13,13 @@ export default function TodaysTrainingPlanCard({
   onSkip,
   onMarkComplete,
 }: Props) {
+  const focusText =
+    typeof plan.item === "string"
+      ? plan.item
+      : "name" in plan.item && typeof plan.item.name === "string"
+        ? plan.item.name
+        : JSON.stringify(plan.item);
+
   return (
     <section
       aria-label="today-training-plan"
@@ -26,7 +33,7 @@ export default function TodaysTrainingPlanCard({
       <h3 style={{ margin: 0 }}>Today’s Training Plan</h3>
 
       <p style={{ margin: "8px 0 4px" }}>
-        <strong>Focus:</strong> {plan.item}
+        <strong>Focus:</strong> {focusText}
       </p>
       <p style={{ margin: "4px 0" }}>
         <strong>Reason:</strong> {plan.reason}

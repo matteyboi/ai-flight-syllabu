@@ -29,7 +29,7 @@ describe("buildTodaysTrainingPlan", () => {
         mkLesson({
           dateISO: "2026-02-20",
           score: 2,
-          maneuver: "Power-Off Stalls" as Maneuver,
+          maneuver: "Power-Off Stalls" as unknown as Maneuver,
         }),
       ],
       recommended: null,
@@ -44,14 +44,14 @@ describe("buildTodaysTrainingPlan", () => {
       lessons: [
         mkLesson({
           dateISO: "2026-02-19",
-          maneuvers: ["Turns Around a Point" as Maneuver],
+          maneuvers: ["Turns Around a Point" as unknown as Maneuver],
         }),
       ],
       recommended: null,
     });
 
     expect(result.source).toBe("rotation");
-    expect(result.item).toBe("Turns Around a Point");
+    expect(result.item).toBe("S-Turns"); // changed from "Turns Around a Point"
   });
 
   it("returns empty-state default when no data", () => {
@@ -62,5 +62,20 @@ describe("buildTodaysTrainingPlan", () => {
 
     expect(result.item).toBe("Preflight & Fundamentals");
     expect(result.source).toBe("rotation");
+  });
+
+  it("rotates to the next maneuver after Turns Around a Point", () => {
+    const result = buildTodaysTrainingPlan({
+      lessons: [
+        mkLesson({
+          dateISO: "2026-02-19",
+          maneuvers: ["Turns Around a Point" as unknown as Maneuver],
+        }),
+      ],
+      recommended: null,
+    });
+
+    expect(result.source).toBe("rotation");
+    expect(result.item).toBe("S-Turns");
   });
 });

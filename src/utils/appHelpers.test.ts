@@ -15,6 +15,8 @@ function mkLesson(params: {
   return params as unknown as LessonEntry;
 }
 
+const asManeuver = (value: string): Maneuver => value as unknown as Maneuver;
+
 describe("computeSnapshotMetrics", () => {
   it("returns no-lesson defaults", () => {
     expect(computeSnapshotMetrics([])).toEqual({
@@ -104,9 +106,9 @@ describe("formatRecommendation", () => {
 
 describe("collectManeuvers", () => {
   it("deduplicates maneuvers and includes recommendation", () => {
-    const m1 = "Turns Around a Point" as Maneuver;
-    const m2 = "Power-Off Stalls" as Maneuver;
-    const m3 = "Slow Flight" as Maneuver;
+    const m1 = asManeuver("Turns Around a Point");
+    const m2 = asManeuver("Power-Off Stalls");
+    const m3 = asManeuver("Slow Flight");
 
     const lessons: LessonEntry[] = [
       mkLesson({ dateISO: "2026-01-01", maneuvers: [m1, m2] }),
@@ -119,7 +121,7 @@ describe("collectManeuvers", () => {
   });
 
   it("works with null recommended maneuver", () => {
-    const m1 = "Ground Reference Maneuvers" as Maneuver;
+    const m1 = asManeuver("Ground Reference Maneuvers");
 
     const lessons: LessonEntry[] = [mkLesson({ dateISO: "2026-01-01", maneuvers: [m1] })];
     expect(collectManeuvers(lessons, null)).toEqual([m1]);
