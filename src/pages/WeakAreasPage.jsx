@@ -23,7 +23,9 @@ export function WeakAreasPage() {
           <p>🎯 No weak areas logged yet.</p>
         ) : (
           ranked.map(([name, count]) => (
-            <p key={name}>🎯 {name} ({count})</p>
+            <p key={name}>
+              🎯 {name} ({count})
+            </p>
           ))
         )}
       </section>

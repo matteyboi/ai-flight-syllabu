@@ -61,13 +61,13 @@ describe("SmartLessonSuggestions", () => {
     const onCreateLessonFromSuggestions = vi.fn();
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m1",
-          name: "Stalls",
-          category: "Airwork",
-          priority: 1,
-          reasons: mockReasons("Low recent score"),
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m1",
+        name: "Stalls",
+        category: "Airwork",
+        priority: 1,
+        reasons: mockReasons("Low recent score"),
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 
@@ -100,9 +100,12 @@ describe("SmartLessonSuggestions", () => {
   it("disables create button when handler is missing", () => {
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m2", name: "Steep Turns", priority: 2, reasons: [],
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m2",
+        name: "Steep Turns",
+        priority: 2,
+        reasons: [],
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 
@@ -116,13 +119,13 @@ describe("SmartLessonSuggestions", () => {
   it("renders suggestion details", () => {
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m1",
-          name: "Stalls",
-          category: "Airwork",
-          priority: 1,
-          reasons: mockReasons("Low recent score", "Not practiced recently"),
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m1",
+        name: "Stalls",
+        category: "Airwork",
+        priority: 1,
+        reasons: mockReasons("Low recent score", "Not practiced recently"),
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 
@@ -168,22 +171,22 @@ describe("SmartLessonSuggestions", () => {
     const onCreateLessonFromSuggestions = vi.fn();
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m2",
-          name: "Steep Turns",
-          category: "Airwork",
-          priority: 1,
-          reasons: [],
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m2",
+        name: "Steep Turns",
+        category: "Airwork",
+        priority: 1,
+        reasons: [],
+        avgScore: null,
+        lastPracticedISO: null,
       },
       {
-          maneuverId: "m1",
-          name: "Stalls",
-          category: "Airwork",
-          priority: 2,
-          reasons: [],
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m1",
+        name: "Stalls",
+        category: "Airwork",
+        priority: 2,
+        reasons: [],
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 
@@ -199,9 +202,12 @@ describe("SmartLessonSuggestions", () => {
   it("does not render category text when category is missing", () => {
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m2", name: "Steep Turns", priority: 2, reasons: [],
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m2",
+        name: "Steep Turns",
+        priority: 2,
+        reasons: [],
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 
@@ -216,13 +222,13 @@ describe("SmartLessonSuggestions", () => {
   it("does not render reasons separator when reasons are empty", () => {
     mockedBuildLessonSuggestions.mockReturnValue([
       {
-          maneuverId: "m2",
-          name: "Steep Turns",
-          category: "Airwork",
-          priority: 2,
-          reasons: [],
-          avgScore: null,
-          lastPracticedISO: null
+        maneuverId: "m2",
+        name: "Steep Turns",
+        category: "Airwork",
+        priority: 2,
+        reasons: [],
+        avgScore: null,
+        lastPracticedISO: null,
       },
     ]);
 

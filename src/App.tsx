@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { loadAppState } from "./utils/storage";
 import type { Student } from "./models/student";
@@ -107,7 +113,11 @@ function LogLessonPage({
       <form className="lesson-form" onSubmit={submit}>
         <label>
           Date
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </label>
         <label>
           Lesson
@@ -184,9 +194,7 @@ function RecentLogsPage({
   const weakOptions = useMemo(
     () =>
       Array.from(
-        new Set(
-          logs.map((l) => l.weakArea.trim()).filter(Boolean),
-        ),
+        new Set(logs.map((l) => l.weakArea.trim()).filter(Boolean)),
       ).sort((a, b) => a.localeCompare(b)),
     [logs],
   );
@@ -257,7 +265,11 @@ function RecentLogsPage({
         </button>
         <label className="secondary-btn import-btn">
           Import JSON
-          <input type="file" accept="application/json" onChange={onImportChange} />
+          <input
+            type="file"
+            accept="application/json"
+            onChange={onImportChange}
+          />
         </label>
       </div>
 
@@ -268,9 +280,20 @@ function RecentLogsPage({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-        <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-        <select value={weakFilter} onChange={(e) => setWeakFilter(e.target.value)}>
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+        />
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+        />
+        <select
+          value={weakFilter}
+          onChange={(e) => setWeakFilter(e.target.value)}
+        >
           <option value="">All weak areas</option>
           {weakOptions.map((w) => (
             <option key={w} value={w}>
@@ -284,7 +307,11 @@ function RecentLogsPage({
       </div>
 
       {filteredLogs.length === 0 ? (
-        <p>{logs.length === 0 ? "🕘 No logs yet. Add one in Log Lesson." : "No logs match filters."}</p>
+        <p>
+          {logs.length === 0
+            ? "🕘 No logs yet. Add one in Log Lesson."
+            : "No logs match filters."}
+        </p>
       ) : (
         <div className="recent-log-list">
           {filteredLogs.map((l) => {
@@ -296,56 +323,85 @@ function RecentLogsPage({
                   <>
                     <div className="recent-log-row">
                       <p>
-                        🕘 {l.date} — {l.lesson} {l.duration ? `— ${l.duration}` : ""}
+                        🕘 {l.date} — {l.lesson}{" "}
+                        {l.duration ? `— ${l.duration}` : ""}
                       </p>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <button type="button" className="secondary-btn" onClick={() => startEdit(l)}>
+                        <button
+                          type="button"
+                          className="secondary-btn"
+                          onClick={() => startEdit(l)}
+                        >
                           Edit
                         </button>
-                        <button type="button" className="danger-btn" onClick={() => onDelete(l.id)}>
+                        <button
+                          type="button"
+                          className="danger-btn"
+                          onClick={() => onDelete(l.id)}
+                        >
                           Delete
                         </button>
                       </div>
                     </div>
                     {l.weakArea ? <p>🎯 Weak area: {l.weakArea}</p> : null}
-                    {l.notes ? <p className="recent-log-notes">{l.notes}</p> : null}
+                    {l.notes ? (
+                      <p className="recent-log-notes">{l.notes}</p>
+                    ) : null}
                   </>
                 ) : (
                   <div style={{ display: "grid", gap: 8 }}>
                     <input
                       type="date"
                       value={draft.date}
-                      onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, date: e.target.value }))
+                      }
                     />
                     <input
                       type="text"
                       value={draft.lesson}
-                      onChange={(e) => setDraft((d) => ({ ...d, lesson: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, lesson: e.target.value }))
+                      }
                       placeholder="Lesson"
                     />
                     <input
                       type="text"
                       value={draft.duration}
-                      onChange={(e) => setDraft((d) => ({ ...d, duration: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, duration: e.target.value }))
+                      }
                       placeholder="Duration"
                     />
                     <input
                       type="text"
                       value={draft.weakArea}
-                      onChange={(e) => setDraft((d) => ({ ...d, weakArea: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, weakArea: e.target.value }))
+                      }
                       placeholder="Weak Area"
                     />
                     <textarea
                       rows={3}
                       value={draft.notes}
-                      onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, notes: e.target.value }))
+                      }
                       placeholder="Notes"
                     />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button type="button" className="primary-btn" onClick={saveEdit}>
+                      <button
+                        type="button"
+                        className="primary-btn"
+                        onClick={saveEdit}
+                      >
                         Save
                       </button>
-                      <button type="button" className="secondary-btn" onClick={cancelEdit}>
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={cancelEdit}
+                      >
                         Cancel
                       </button>
                     </div>
@@ -495,13 +551,19 @@ function normalizeStageProgress(input: unknown): StageProgressByStudent {
   if (!input || typeof input !== "object") return {};
   const out: StageProgressByStudent = {};
 
-  for (const [studentId, stageMap] of Object.entries(input as Record<string, unknown>)) {
+  for (const [studentId, stageMap] of Object.entries(
+    input as Record<string, unknown>,
+  )) {
     if (!stageMap || typeof stageMap !== "object") continue;
     const normalizedStageMap: StageProgressForStudent = {};
 
-    for (const [stageId, reqs] of Object.entries(stageMap as Record<string, unknown>)) {
+    for (const [stageId, reqs] of Object.entries(
+      stageMap as Record<string, unknown>,
+    )) {
       if (!Array.isArray(reqs)) continue;
-      normalizedStageMap[String(stageId)] = reqs.map((r) => String(r).trim()).filter(Boolean);
+      normalizedStageMap[String(stageId)] = reqs
+        .map((r) => String(r).trim())
+        .filter(Boolean);
     }
 
     out[String(studentId)] = normalizedStageMap;
@@ -536,20 +598,26 @@ function StagesPage({
   const isStageComplete = (stageId: number, requirements: string[]) =>
     requirements.every((req) => isReqDone(stageId, req));
 
-  const firstIncompleteId = STAGE_DEFS.find(
-    (s) => !isStageComplete(s.id, s.requirements),
-  )?.id ?? null;
+  const firstIncompleteId =
+    STAGE_DEFS.find((s) => !isStageComplete(s.id, s.requirements))?.id ?? null;
 
-  const totalReqs = STAGE_DEFS.reduce((sum, s) => sum + s.requirements.length, 0);
+  const totalReqs = STAGE_DEFS.reduce(
+    (sum, s) => sum + s.requirements.length,
+    0,
+  );
   const completedReqs = STAGE_DEFS.reduce(
     (sum, s) => sum + s.requirements.filter((r) => isReqDone(s.id, r)).length,
     0,
   );
-  const completedStages = STAGE_DEFS.filter((s) => isStageComplete(s.id, s.requirements)).length;
+  const completedStages = STAGE_DEFS.filter((s) =>
+    isStageComplete(s.id, s.requirements),
+  ).length;
   const progressPct = Math.round((completedReqs / totalReqs) * 100);
 
   const lastLessonDate = logs.length
-    ? [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date
+    ? [...logs].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      )[0].date
     : "—";
 
   const weakCounts = logs.reduce<Record<string, number>>((acc, l) => {
@@ -558,13 +626,16 @@ function StagesPage({
     acc[key] = (acc[key] ?? 0) + 1;
     return acc;
   }, {});
-  const topWeakArea = Object.entries(weakCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "None";
+  const topWeakArea =
+    Object.entries(weakCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "None";
 
   return (
     <>
       <section className="section-block">
         <h2 className="section-title">AI Progress</h2>
-        {!canEdit ? <p>⚠️ Select a student to track stage requirements.</p> : null}
+        {!canEdit ? (
+          <p>⚠️ Select a student to track stage requirements.</p>
+        ) : null}
         <div className="ai-stats-grid">
           <div className="ai-stat-card">
             <p className="ai-stat-label">Progress</p>
@@ -587,18 +658,36 @@ function StagesPage({
         </div>
         <p>📊 Lessons logged: {totalLessons}</p>
         <div className="ai-progress-track" aria-label="Training progress">
-          <div className="ai-progress-fill" style={{ width: `${progressPct}%` }} />
+          <div
+            className="ai-progress-fill"
+            style={{ width: `${progressPct}%` }}
+          />
         </div>
       </section>
 
       <section className="section-block">
         <h2 className="section-title">{STAGE_DEFS.length} Training Stages</h2>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-          <button type="button" className="secondary-btn" onClick={() => setOpenAll(true)}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 10,
+          }}
+        >
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => setOpenAll(true)}
+          >
             Expand All
           </button>
-          <button type="button" className="secondary-btn" onClick={() => setOpenAll(false)}>
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => setOpenAll(false)}
+          >
             Collapse All
           </button>
           <button
@@ -606,12 +695,18 @@ function StagesPage({
             className="primary-btn"
             disabled={!canEdit || firstIncompleteId === null}
             onClick={() => {
-              if (firstIncompleteId !== null) onCompleteStage(firstIncompleteId);
+              if (firstIncompleteId !== null)
+                onCompleteStage(firstIncompleteId);
             }}
           >
             Mark Current Stage Complete
           </button>
-          <button type="button" className="danger-btn" disabled={!canEdit} onClick={onResetAllStages}>
+          <button
+            type="button"
+            className="danger-btn"
+            disabled={!canEdit}
+            onClick={onResetAllStages}
+          >
             Reset All Stages
           </button>
         </div>
@@ -619,11 +714,17 @@ function StagesPage({
         <div className="stages-grid">
           {STAGE_DEFS.map((stage) => {
             const complete = isStageComplete(stage.id, stage.requirements);
-            const isCurrent = firstIncompleteId !== null && stage.id === firstIncompleteId;
+            const isCurrent =
+              firstIncompleteId !== null && stage.id === firstIncompleteId;
             const blockedByLessons = totalLessons < stage.minLessons;
-            const lockedByOrder = firstIncompleteId !== null && stage.id > firstIncompleteId && !complete;
+            const lockedByOrder =
+              firstIncompleteId !== null &&
+              stage.id > firstIncompleteId &&
+              !complete;
             const locked = blockedByLessons || lockedByOrder;
-            const doneCount = stage.requirements.filter((r) => isReqDone(stage.id, r)).length;
+            const doneCount = stage.requirements.filter((r) =>
+              isReqDone(stage.id, r),
+            ).length;
 
             return (
               <article
@@ -644,7 +745,8 @@ function StagesPage({
                 </div>
 
                 <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Lessons required: {stage.minLessons} • Requirements: {doneCount}/{stage.requirements.length}
+                  Lessons required: {stage.minLessons} • Requirements:{" "}
+                  {doneCount}/{stage.requirements.length}
                 </p>
 
                 <details open={openAll === null ? isCurrent : openAll}>
@@ -659,7 +761,9 @@ function StagesPage({
                               type="checkbox"
                               checked={checked}
                               disabled={!canEdit || locked}
-                              onChange={() => onToggleRequirement(stage.id, req)}
+                              onChange={() =>
+                                onToggleRequirement(stage.id, req)
+                              }
                             />
                             <span>{req}</span>
                           </label>
@@ -752,10 +856,13 @@ function readInitialStageProgress(): StageProgressByStudent {
 
 export default function App() {
   const appState = useMemo(() => loadAppState(), []);
-  const selectedStudent = appState.students.find((s) => s.id === appState.selectedStudentId) ?? null;
+  const selectedStudent =
+    appState.students.find((s) => s.id === appState.selectedStudentId) ?? null;
 
   const [logs, setLogs] = useState<LessonLog[]>(readInitialLogs);
-  const [stageProgress, setStageProgress] = useState<StageProgressByStudent>(readInitialStageProgress);
+  const [stageProgress, setStageProgress] = useState<StageProgressByStudent>(
+    readInitialStageProgress,
+  );
 
   useEffect(() => {
     localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
@@ -847,7 +954,9 @@ export default function App() {
 
       const rawLogs = Array.isArray(parsed)
         ? parsed
-        : parsed && typeof parsed === "object" && Array.isArray((parsed as { logs?: unknown }).logs)
+        : parsed &&
+            typeof parsed === "object" &&
+            Array.isArray((parsed as { logs?: unknown }).logs)
           ? (parsed as { logs: unknown[] }).logs
           : null;
 
@@ -954,7 +1063,9 @@ export default function App() {
           <Route path="/" element={<Navigate to="/log-lesson" replace />} />
           <Route
             path="/log-lesson"
-            element={<LogLessonPage onAdd={addLog} canAdd={Boolean(selectedStudent)} />}
+            element={
+              <LogLessonPage onAdd={addLog} canAdd={Boolean(selectedStudent)} />
+            }
           />
           <Route
             path="/stages"
@@ -982,24 +1093,39 @@ export default function App() {
               />
             }
           />
-          <Route path="/weak-areas" element={<WeakAreasPage logs={selectedLogs} />} />
+          <Route
+            path="/weak-areas"
+            element={<WeakAreasPage logs={selectedLogs} />}
+          />
         </Routes>
       </main>
 
       <nav className="bottom-tabs" aria-label="Primary app tabs">
-        <NavLink to="/log-lesson" className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}>
+        <NavLink
+          to="/log-lesson"
+          className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}
+        >
           <span className="emoji">📝</span>
           <span>Log Lesson</span>
         </NavLink>
-        <NavLink to="/stages" className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}>
+        <NavLink
+          to="/stages"
+          className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}
+        >
           <span className="emoji">🪜</span>
           <span>Stages</span>
         </NavLink>
-        <NavLink to="/recent-logs" className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}>
+        <NavLink
+          to="/recent-logs"
+          className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}
+        >
           <span className="emoji">🕘</span>
           <span>Recent Logs</span>
         </NavLink>
-        <NavLink to="/weak-areas" className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}>
+        <NavLink
+          to="/weak-areas"
+          className={({ isActive }) => `tab-link${isActive ? " active" : ""}`}
+        >
           <span className="emoji">🎯</span>
           <span>Weak Areas</span>
         </NavLink>

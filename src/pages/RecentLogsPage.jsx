@@ -16,9 +16,12 @@ export function RecentLogsPage() {
           <div className="recent-log-list">
             {logs.map((log) => (
               <div className="recent-log-item" key={log.id}>
-                <div className="recent-log-lesson">{log.lesson || "Untitled lesson"}</div>
+                <div className="recent-log-lesson">
+                  {log.lesson || "Untitled lesson"}
+                </div>
                 <div className="recent-log-meta">
-                  {log.date || "No date"} • {log.aircraft || "—"} • {log.duration || "—"}h
+                  {log.date || "No date"} • {log.aircraft || "—"} •{" "}
+                  {log.duration || "—"}h
                 </div>
                 {log.notes ? <p>{log.notes}</p> : null}
               </div>

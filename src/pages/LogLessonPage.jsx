@@ -52,7 +52,12 @@ export function LogLessonPage() {
         <form className="lesson-form" onSubmit={onSubmit}>
           <label>
             Date
-            <input name="date" type="date" value={form.date} onChange={onChange} />
+            <input
+              name="date"
+              type="date"
+              value={form.date}
+              onChange={onChange}
+            />
           </label>
 
           <label>
@@ -111,7 +116,9 @@ export function LogLessonPage() {
             />
           </label>
 
-          <button type="submit" className="primary-btn">Save Lesson</button>
+          <button type="submit" className="primary-btn">
+            Save Lesson
+          </button>
           {saved && <p className="save-msg">✅ Saved</p>}
         </form>
       </section>
