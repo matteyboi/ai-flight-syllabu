@@ -1,8 +1,8 @@
 const LOGS_STORAGE_KEY = "flightLessonLogs";
 
 export function loadLogs() {
-  if (!storage) return [];
-  const raw = storage.getItem(LOGS_STORAGE_KEY);
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return [];
+  const raw = globalThis.localStorage.getItem(LOGS_STORAGE_KEY);
   if (!raw) return [];
   try {
     return JSON.parse(raw);
@@ -12,6 +12,6 @@ export function loadLogs() {
 }
 
 export function saveLogs(logs) {
-  if (!storage) return;
-  storage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
+  globalThis.localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
 }

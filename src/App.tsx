@@ -718,50 +718,48 @@ function WeakAreasPage({ logs }: { logs: LessonLog[] }) {
   );
 }
 
+function readInitialLogs(): LessonLog[] {
+  try {
+    const raw = localStorage.getItem(LOGS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Array<Partial<LessonLog>>) : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .map((l) => ({
+            id: String(l.id ?? crypto.randomUUID()),
+            studentId: String(l.studentId ?? ""),
+            date: String(l.date ?? ""),
+            lesson: String(l.lesson ?? ""),
+            duration: String(l.duration ?? ""),
+            weakArea: String(l.weakArea ?? ""),
+            notes: String(l.notes ?? ""),
+          }))
+          .filter((l) => l.id && l.studentId && l.date && l.lesson)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function readInitialStageProgress(): StageProgressByStudent {
+  try {
+    const raw = localStorage.getItem(STAGE_PROGRESS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : {};
+    return normalizeStageProgress(parsed);
+  } catch {
+    return {};
+  }
+}
+
 export default function App() {
   const appState = useMemo(() => loadAppState(), []);
   const selectedStudent = appState.students.find((s) => s.id === appState.selectedStudentId) ?? null;
 
-  const [logs, setLogs] = useState<LessonLog[]>([]);
-  const [stageProgress, setStageProgress] = useState<StageProgressByStudent>({});
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LOGS_KEY);
-      const parsed = raw ? (JSON.parse(raw) as Array<Partial<LessonLog>>) : [];
-      const normalized: LessonLog[] = Array.isArray(parsed)
-        ? parsed
-            .map((l) => ({
-              id: String(l.id ?? crypto.randomUUID()),
-              studentId: String(l.studentId ?? ""),
-              date: String(l.date ?? ""),
-              lesson: String(l.lesson ?? ""),
-              duration: String(l.duration ?? ""),
-              weakArea: String(l.weakArea ?? ""),
-              notes: String(l.notes ?? ""),
-            }))
-            .filter((l) => l.id && l.studentId && l.date && l.lesson)
-        : [];
-
-      setLogs(normalized);
-    } catch {
-      setLogs([]);
-    }
-  }, []);
+  const [logs, setLogs] = useState<LessonLog[]>(readInitialLogs);
+  const [stageProgress, setStageProgress] = useState<StageProgressByStudent>(readInitialStageProgress);
 
   useEffect(() => {
     localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
   }, [logs]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STAGE_PROGRESS_KEY);
-      const parsed = raw ? (JSON.parse(raw) as unknown) : {};
-      setStageProgress(normalizeStageProgress(parsed));
-    } catch {
-      setStageProgress({});
-    }
-  }, []);
 
   useEffect(() => {
     localStorage.setItem(STAGE_PROGRESS_KEY, JSON.stringify(stageProgress));
