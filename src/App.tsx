@@ -704,7 +704,7 @@ function StagesPage({
           <button
             type="button"
             className="danger-btn"
-            disabled={!canEdit}
+            disabled={!canEdit || completedReqs === 0}
             onClick={onResetAllStages}
           >
             Reset All Stages
@@ -725,6 +725,7 @@ function StagesPage({
             const doneCount = stage.requirements.filter((r) =>
               isReqDone(stage.id, r),
             ).length;
+            const hasAnyInStage = doneCount > 0;
 
             return (
               <article
@@ -777,7 +778,7 @@ function StagesPage({
                   <button
                     type="button"
                     className="secondary-btn"
-                    disabled={!canEdit}
+                    disabled={!canEdit || !hasAnyInStage}
                     onClick={() => onResetStage(stage.id)}
                   >
                     Clear Stage
@@ -1027,6 +1028,12 @@ export default function App() {
 
   function resetStage(stageId: number) {
     if (!selectedStudent) return;
+
+    const stage = STAGE_DEFS.find((s) => s.id === stageId);
+    const stageLabel = stage?.title ?? `Stage ${stageId}`;
+    const ok = window.confirm(`Clear progress for ${stageLabel}?`);
+    if (!ok) return;
+
     const studentId = selectedStudent.id;
     const key = String(stageId);
 
@@ -1044,14 +1051,18 @@ export default function App() {
 
   function resetAllStages() {
     if (!selectedStudent) return;
-    const ok = window.confirm("Reset all stage requirements for this student?");
+
+    const ok = window.confirm(
+      "Reset all stages for this student? This cannot be undone.",
+    );
     if (!ok) return;
 
     const studentId = selectedStudent.id;
-    setStageProgress((prev) => ({
-      ...prev,
-      [studentId]: {},
-    }));
+    setStageProgress((prev) => {
+      const next = { ...prev };
+      delete next[studentId];
+      return next;
+    });
   }
 
   return (
