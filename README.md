@@ -71,3 +71,14 @@ export default defineConfig([
   },
 ]);
 ```
+
+## Local validation
+
+Before opening a PR, run:
+
+```bash
+npm run format:check --if-present
+npm run lint
+npm run test
+npm run build
+```
