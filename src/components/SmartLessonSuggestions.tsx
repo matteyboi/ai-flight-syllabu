@@ -1,11 +1,17 @@
 import { useMemo } from "react";
 import type { LessonEntry } from "../models/lesson";
-import { buildLessonSuggestions, type ManeuverRef } from "../utils/suggestions";
+import { buildLessonSuggestions } from "../utils/suggestions";
 
-type Props = {
+type Maneuver = {
+  id: string;
+  name: string;
+  category?: string;
+};
+
+type SmartLessonSuggestionsProps = {
   studentId: string;
   lessons: LessonEntry[];
-  maneuvers: ManeuverRef[];
+  maneuvers: Maneuver[];
   recencyWindow: number;
   maxSuggestions?: number;
   onCreateLessonFromSuggestions?: (maneuverIds: string[]) => void;
@@ -18,7 +24,7 @@ export function SmartLessonSuggestions({
   recencyWindow,
   maxSuggestions = 5,
   onCreateLessonFromSuggestions,
-}: Props) {
+}: SmartLessonSuggestionsProps) {
   const suggestions = useMemo(
     () =>
       buildLessonSuggestions({
@@ -31,9 +37,17 @@ export function SmartLessonSuggestions({
     [studentId, lessons, maneuvers, recencyWindow, maxSuggestions]
   );
 
+  const canCreate =
+    suggestions.length > 0 && typeof onCreateLessonFromSuggestions === "function";
+
+  const handleCreate = () => {
+    if (!onCreateLessonFromSuggestions) return;
+    onCreateLessonFromSuggestions(suggestions.map((s) => s.maneuverId));
+  };
+
   return (
-    <section aria-label="Smart lesson suggestions">
-      <h3>Next Lesson Focus</h3>
+    <section>
+      <h3>Smart Lesson Suggestions</h3>
 
       {suggestions.length === 0 ? (
         <p>No suggestions yet. Add more lesson scores to generate recommendations.</p>
@@ -42,19 +56,16 @@ export function SmartLessonSuggestions({
           {suggestions.map((s) => (
             <li key={s.maneuverId}>
               <strong>{s.name}</strong>
-              {s.category ? ` (${s.category})` : ""} — Priority {s.priority}
-              {s.reasons.length > 0 ? ` · ${s.reasons.join(", ")}` : ""}
+              {s.category ? ` (${s.category})` : ""}
+              {` Priority ${s.priority}`}
+              {s.reasons.length > 0 ? ` ${s.reasons.join(", ")}` : ""}
             </li>
           ))}
         </ul>
       )}
 
-      <button
-        type="button"
-        disabled={suggestions.length === 0 || !onCreateLessonFromSuggestions}
-        onClick={() => onCreateLessonFromSuggestions?.(suggestions.map((s) => s.maneuverId))}
-      >
-        Create lesson from suggestions
+      <button type="button" onClick={handleCreate} disabled={!canCreate}>
+        Create Lesson from Suggestions
       </button>
     </section>
   );
