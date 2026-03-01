@@ -77,7 +77,10 @@ const lockedChipStyle: CSSProperties = {
   color: "#d1d5db",
 };
 
-function App() {
+// REMOVE this type (unused)
+// type TabKey = "dashboard" | "students" | "lessons" | "settings";
+
+export default function App() {
   const initial = useMemo(() => loadAppState(), []);
   const initialSettings = useMemo(() => loadSettings(), []);
 
@@ -354,7 +357,7 @@ function App() {
           background: "rgba(20,30,60,0.98)",
           boxShadow: "0 8px 32px 0 #1976d244",
           backdropFilter: "blur(8px)",
-          paddingBottom: selectedStudent ? 110 : 16, // leaves room for fixed bottom tabs
+          paddingBottom: 130,
         }}
       >
         <StudentHeader
@@ -443,89 +446,88 @@ function App() {
         </div>
 
         <div style={{ marginTop: 20 }}>
-          {selectedStudent ? (
-            <div
-              style={{
-                position: "fixed",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 1000,
-                borderTop: "1px solid #42a5f544",
-                background: "rgba(15, 23, 42, 0.96)",
-                backdropFilter: "blur(8px)",
-                padding: "10px 12px calc(10px + env(safe-area-inset-bottom))",
-              }}
-            >
-              <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-                <div
-                  style={{ marginBottom: 6, color: "#bfdbfe", fontSize: 12 }}
-                >
-                  Selected Stage: {selectedStage}
-                </div>
+          <div
+            style={{
+              position: "fixed",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1000,
+              borderTop: "1px solid #42a5f544",
+              background: "rgba(15, 23, 42, 0.96)",
+              backdropFilter: "blur(8px)",
+              padding: "10px 12px calc(10px + env(safe-area-inset-bottom))",
+            }}
+          >
+            <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+              <div style={{ marginBottom: 6, color: "#bfdbfe", fontSize: 12 }}>
+                {selectedStudent
+                  ? `Selected Stage: ${selectedStage}`
+                  : "Select a student to unlock stages"}
+              </div>
 
-                <div
-                  role="tablist"
-                  aria-label="Flight training stages"
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    overflowX: "auto",
-                    paddingBottom: 2,
-                  }}
-                >
-                  {STAGES.map((stage) => {
-                    const locked = isStageLocked(stage.stageNumber);
-                    const isSelected = selectedStage === stage.stageNumber;
-                    const lockReason =
-                      stageLockReasons[stage.stageNumber] ?? "";
+              <div
+                role="tablist"
+                aria-label="Flight training stages"
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  overflowX: "auto",
+                  paddingBottom: 2,
+                }}
+              >
+                {STAGES.map((stage) => {
+                  const lockedByProgress = isStageLocked(stage.stageNumber);
+                  const locked = !selectedStudent || lockedByProgress;
+                  const isSelected = selectedStage === stage.stageNumber;
+                  const lockReason =
+                    !selectedStudent
+                      ? "Select a student first"
+                      : (stageLockReasons[stage.stageNumber] ?? "");
 
-                    return (
-                      <button
-                        key={stage.stageNumber}
-                        role="tab"
-                        aria-selected={isSelected}
-                        type="button"
-                        disabled={locked}
-                        title={locked ? lockReason : `Go to ${stage.title}`}
-                        onClick={() => {
-                          if (locked) return;
-                          setSelectedStage(stage.stageNumber);
-                        }}
-                        style={{
-                          flex: "1 0 140px",
-                          textAlign: "center",
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: isSelected
-                            ? "1px solid #93c5fd"
-                            : "1px solid #42a5f544",
-                          background: locked
-                            ? "#1f2937"
-                            : isSelected
-                              ? "#1d4ed8"
-                              : "#1f3a66",
-                          color: locked ? "#9ca3af" : "#dbeafe",
-                          cursor: locked ? "not-allowed" : "pointer",
-                          opacity: locked ? 0.75 : 1,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {stage.stageNumber}. {stage.title}
-                        {locked ? (
-                          <span style={lockedChipStyle}> Locked</span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
+                  return (
+                    <button
+                      key={stage.stageNumber}
+                      role="tab"
+                      aria-selected={isSelected}
+                      type="button"
+                      disabled={locked}
+                      title={locked ? lockReason : `Go to ${stage.title}`}
+                      onClick={() => {
+                        if (locked) return;
+                        setSelectedStage(stage.stageNumber);
+                      }}
+                      style={{
+                        flex: "1 0 140px",
+                        textAlign: "center",
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: isSelected
+                          ? "1px solid #93c5fd"
+                          : "1px solid #42a5f544",
+                        background: locked
+                          ? "#1f2937"
+                          : isSelected
+                            ? "#1d4ed8"
+                            : "#1f3a66",
+                        color: locked ? "#9ca3af" : "#dbeafe",
+                        cursor: locked ? "not-allowed" : "pointer",
+                        opacity: locked ? 0.75 : 1,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {stage.stageNumber}. {stage.title}
+                      {locked ? (
+                        <span style={lockedChipStyle}> Locked</span>
+                      ) : null}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     </>
   );
 }
-
-export default App;
