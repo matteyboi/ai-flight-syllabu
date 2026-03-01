@@ -31,17 +31,8 @@ function maneuverName(value: Maneuver | string | null | undefined): string {
   return "";
 }
 
-const asManeuver = (value: string): Maneuver => value as unknown as Maneuver;
-
-const SOME_MANEUVER_LIST: Maneuver[] = [
-  asManeuver("Slow Flight"),
-  asManeuver("Power-Off Stalls"),
-  asManeuver("Turns Around a Point"),
-  asManeuver("S-Turns"),
-];
-
 export function buildTodaysTrainingPlan(
-  input: BuildTodaysTrainingPlanInput
+  input: BuildTodaysTrainingPlanInput,
 ): TodaysTrainingPlan {
   const sorted = [...input.lessons].sort(byNewestDate);
 
@@ -74,15 +65,19 @@ export function buildTodaysTrainingPlan(
   // 3) Rotation fallback from historical maneuvers
   const seen = collectManeuvers(sorted, null);
   if (seen.length > 0) {
-    const recentLesson = sorted[sorted.length - 1] as LessonWithOptionalFields | undefined;
+    const recentLesson = sorted[sorted.length - 1] as
+      | LessonWithOptionalFields
+      | undefined;
     const lastFlown =
       recentLesson?.maneuver ??
-      (Array.isArray(recentLesson?.maneuvers) ? recentLesson.maneuvers[0] : undefined);
+      (Array.isArray(recentLesson?.maneuvers)
+        ? recentLesson.maneuvers[0]
+        : undefined);
 
     const lastName = maneuverName(lastFlown);
 
     const currentIndex = KNOWN_MANEUVERS.findIndex(
-      (m) => maneuverName(m) === lastName
+      (m) => maneuverName(m) === lastName,
     );
 
     const nextManeuver =

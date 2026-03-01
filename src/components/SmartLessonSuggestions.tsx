@@ -34,11 +34,12 @@ export function SmartLessonSuggestions({
         recencyWindow,
         maxSuggestions,
       }),
-    [studentId, lessons, maneuvers, recencyWindow, maxSuggestions]
+    [studentId, lessons, maneuvers, recencyWindow, maxSuggestions],
   );
 
   const canCreate =
-    suggestions.length > 0 && typeof onCreateLessonFromSuggestions === "function";
+    suggestions.length > 0 &&
+    typeof onCreateLessonFromSuggestions === "function";
 
   const handleCreate = () => {
     if (!onCreateLessonFromSuggestions) return;
@@ -50,7 +51,10 @@ export function SmartLessonSuggestions({
       <h3>Smart Lesson Suggestions</h3>
 
       {suggestions.length === 0 ? (
-        <p>No suggestions yet. Add more lesson scores to generate recommendations.</p>
+        <p>
+          No suggestions yet. Add more lesson scores to generate
+          recommendations.
+        </p>
       ) : (
         <ul>
           {suggestions.map((s) => (

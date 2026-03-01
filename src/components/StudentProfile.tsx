@@ -27,7 +27,9 @@ export const StudentProfile: React.FC<Props> = ({ student }) => (
     >
       Student Profile
     </h2>
-    <div style={{ marginTop: 6, fontWeight: 700, color: "#e3f2fd", fontSize: 14 }}>
+    <div
+      style={{ marginTop: 6, fontWeight: 700, color: "#e3f2fd", fontSize: 14 }}
+    >
       Name: <span style={{ fontWeight: 400 }}>{student.name}</span>
     </div>
     <div style={{ marginTop: 4, color: "#e3f2fd", fontSize: 14 }}>

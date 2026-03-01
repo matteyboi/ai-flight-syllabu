@@ -11,8 +11,8 @@ type Props = {
   totalHours: number;
 
   // tuning knobs
-  minSoloHours: number;        // e.g. 10
-  foundationWindow: number;    // e.g. 5 (last 5)
+  minSoloHours: number; // e.g. 10
+  foundationWindow: number; // e.g. 5 (last 5)
 };
 
 const STAGE_TITLES: Record<number, string> = {
@@ -66,7 +66,7 @@ function pct(n01: number) {
 
 function collectScoresNewestFirst(
   lessons: LessonEntry[],
-  ids: Set<string>
+  ids: Set<string>,
 ): number[] {
   // lessons are assumed newest-first OR any order; we’ll sort by dateISO
   const sorted = lessons
@@ -118,8 +118,8 @@ export function ReadinessPanel({
     const safetyAvg = avgLastN(safetyScores, foundationWindow);
 
     // Normalize to 0..1 where 5 = 1.0
-    const foundation01 = clamp01(((foundationAvg ?? 0) / 5));
-    const safety01 = clamp01(((safetyAvg ?? 0) / 5));
+    const foundation01 = clamp01((foundationAvg ?? 0) / 5);
+    const safety01 = clamp01((safetyAvg ?? 0) / 5);
 
     // Solo-hours progress (still useful even after solo — simple “experience” weight)
     const hours01 = minSoloHours > 0 ? clamp01(totalHours / minSoloHours) : 0;
@@ -129,13 +129,18 @@ export function ReadinessPanel({
 
     // Weighted readiness (tune later)
     const readiness01 =
-      0.40 * foundation01 +
-      0.30 * safety01 +
-      0.20 * hours01 +
-      0.10 * admin01;
+      0.4 * foundation01 + 0.3 * safety01 + 0.2 * hours01 + 0.1 * admin01;
 
     return { readiness01, foundationAvg, safetyAvg, hours01, admin01 };
-  }, [unlockedStage, lessons, medical, tsaA14, totalHours, minSoloHours, foundationWindow]);
+  }, [
+    unlockedStage,
+    lessons,
+    medical,
+    tsaA14,
+    totalHours,
+    minSoloHours,
+    foundationWindow,
+  ]);
 
   const barPct = pct(data.readiness01);
 
@@ -185,7 +190,11 @@ export function ReadinessPanel({
       <div style={{ marginTop: 12, display: "grid", gap: 6, fontSize: 13 }}>
         <div>
           Foundation avg (last {foundationWindow}):{" "}
-          <b>{data.foundationAvg === null ? "n/a" : data.foundationAvg.toFixed(2)}</b>
+          <b>
+            {data.foundationAvg === null
+              ? "n/a"
+              : data.foundationAvg.toFixed(2)}
+          </b>
         </div>
         <div>
           Safety-critical avg (last {foundationWindow}):{" "}
@@ -198,7 +207,8 @@ export function ReadinessPanel({
           </b>
         </div>
         <div>
-          Admin: medical=<b>{medical ? "Yes" : "No"}</b> • TSA A.14=<b>{tsaA14 ? "Yes" : "No"}</b>
+          Admin: medical=<b>{medical ? "Yes" : "No"}</b> • TSA A.14=
+          <b>{tsaA14 ? "Yes" : "No"}</b>
         </div>
       </div>
     </div>

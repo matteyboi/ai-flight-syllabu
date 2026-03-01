@@ -44,7 +44,9 @@ export function SettingsPanel({
         <input
           type="checkbox"
           checked={settings.patternOnlyDay}
-          onChange={(e) => onChange({ ...settings, patternOnlyDay: e.target.checked })}
+          onChange={(e) =>
+            onChange({ ...settings, patternOnlyDay: e.target.checked })
+          }
         />{" "}
         Pattern-only day
       </label>
@@ -59,7 +61,10 @@ export function SettingsPanel({
           onChange={(e) =>
             onChange({
               ...settings,
-              recencyWindow: Math.min(180, Math.max(1, Number(e.target.value) || 1)),
+              recencyWindow: Math.min(
+                180,
+                Math.max(1, Number(e.target.value) || 1),
+              ),
             })
           }
           style={{ marginLeft: 8, width: 90 }}
@@ -107,9 +112,10 @@ export function SettingsPanel({
           </div>
 
           <div style={{ fontSize: 12, marginBottom: 8 }}>
-            Students: {pendingImportSummary.studentCount} · Lessons: {pendingImportSummary.lessonCount} ·
-            Pattern-only: {pendingImportSummary.patternOnlyDay ? "On" : "Off"} ·
-            Recency: {pendingImportSummary.recencyWindow} days
+            Students: {pendingImportSummary.studentCount} · Lessons:{" "}
+            {pendingImportSummary.lessonCount} · Pattern-only:{" "}
+            {pendingImportSummary.patternOnlyDay ? "On" : "Off"} · Recency:{" "}
+            {pendingImportSummary.recencyWindow} days
           </div>
 
           {importValidation ? (
@@ -117,14 +123,16 @@ export function SettingsPanel({
               style={{
                 fontSize: 12,
                 marginBottom: 8,
-                color: importValidation.hasCriticalIssues ? "#fecaca" : "#bbf7d0",
+                color: importValidation.hasCriticalIssues
+                  ? "#fecaca"
+                  : "#bbf7d0",
               }}
             >
               Validation — invalid students: {importValidation.invalidStudents},
-              invalid lessons: {importValidation.invalidLessons},
-              duplicate student IDs: {importValidation.duplicateStudentIds},
-              duplicate lesson IDs: {importValidation.duplicateLessonIds},
-              unknown lesson refs: {importValidation.unknownStudentRefs}
+              invalid lessons: {importValidation.invalidLessons}, duplicate
+              student IDs: {importValidation.duplicateStudentIds}, duplicate
+              lesson IDs: {importValidation.duplicateLessonIds}, unknown lesson
+              refs: {importValidation.unknownStudentRefs}
             </div>
           ) : null}
 

@@ -10,8 +10,9 @@ vi.mock("../utils/suggestions", () => ({
 
 const mockedBuildLessonSuggestions = vi.mocked(buildLessonSuggestions);
 
-type MockSuggestionReasons =
-  ReturnType<typeof buildLessonSuggestions>[number]["reasons"];
+type MockSuggestionReasons = ReturnType<
+  typeof buildLessonSuggestions
+>[number]["reasons"];
 
 const mockReasons = (...reasons: string[]) =>
   reasons as unknown as MockSuggestionReasons;
@@ -35,7 +36,7 @@ const maneuvers = [
 ];
 
 const renderComponent = (
-  props: Partial<Parameters<typeof SmartLessonSuggestions>[0]> = {}
+  props: Partial<Parameters<typeof SmartLessonSuggestions>[0]> = {},
 ) =>
   render(
     <SmartLessonSuggestions
@@ -45,7 +46,7 @@ const renderComponent = (
       recencyWindow={30}
       onCreateLessonFromSuggestions={vi.fn()}
       {...props}
-    />
+    />,
   );
 
 describe("SmartLessonSuggestions", () => {
@@ -72,7 +73,7 @@ describe("SmartLessonSuggestions", () => {
     renderComponent({ onCreateLessonFromSuggestions });
 
     fireEvent.click(
-      screen.getByRole("button", { name: /create lesson from suggestions/i })
+      screen.getByRole("button", { name: /create lesson from suggestions/i }),
     );
 
     expect(onCreateLessonFromSuggestions).toHaveBeenCalledTimes(1);
@@ -86,12 +87,12 @@ describe("SmartLessonSuggestions", () => {
 
     expect(
       screen.getByText(
-        /no suggestions yet\. add more lesson scores to generate recommendations\./i
-      )
+        /no suggestions yet\. add more lesson scores to generate recommendations\./i,
+      ),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("button", { name: /create lesson from suggestions/i })
+      screen.getByRole("button", { name: /create lesson from suggestions/i }),
     ).toBeDisabled();
   });
 
@@ -103,7 +104,7 @@ describe("SmartLessonSuggestions", () => {
     renderComponent({ onCreateLessonFromSuggestions: undefined });
 
     expect(
-      screen.getByRole("button", { name: /create lesson from suggestions/i })
+      screen.getByRole("button", { name: /create lesson from suggestions/i }),
     ).toBeDisabled();
   });
 
@@ -124,7 +125,7 @@ describe("SmartLessonSuggestions", () => {
     expect(screen.getByText(/\(Airwork\)/)).toBeInTheDocument();
     expect(screen.getByText(/Priority 1/)).toBeInTheDocument();
     expect(
-      screen.getByText(/Low recent score, Not practiced recently/)
+      screen.getByText(/Low recent score, Not practiced recently/),
     ).toBeInTheDocument();
   });
 
@@ -178,7 +179,7 @@ describe("SmartLessonSuggestions", () => {
     renderComponent({ onCreateLessonFromSuggestions });
 
     fireEvent.click(
-      screen.getByRole("button", { name: /create lesson from suggestions/i })
+      screen.getByRole("button", { name: /create lesson from suggestions/i }),
     );
 
     expect(onCreateLessonFromSuggestions).toHaveBeenCalledWith(["m2", "m1"]);
@@ -227,7 +228,7 @@ describe("SmartLessonSuggestions", () => {
         maneuvers={maneuvers}
         recencyWindow={31}
         onCreateLessonFromSuggestions={vi.fn()}
-      />
+      />,
     );
 
     expect(mockedBuildLessonSuggestions).toHaveBeenCalledTimes(2);

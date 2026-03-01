@@ -98,12 +98,16 @@ function migrateSettings(raw: unknown): AppSettings {
 export function loadAppState(): PersistedAppState {
   const fallback: PersistedAppState = { students: [], selectedStudentId: null };
 
-  const current = safeParse<Versioned<PersistedAppState>>(localStorage.getItem(APP_KEY));
+  const current = safeParse<Versioned<PersistedAppState>>(
+    localStorage.getItem(APP_KEY),
+  );
   if (current?.version === STORAGE_VERSION && current.data) {
     return current.data;
   }
 
-  const legacy = safeParse<PersistedAppState>(localStorage.getItem(LEGACY_APP_KEY));
+  const legacy = safeParse<PersistedAppState>(
+    localStorage.getItem(LEGACY_APP_KEY),
+  );
   if (legacy) return legacy;
 
   return fallback;
@@ -118,12 +122,16 @@ export function saveAppState(state: PersistedAppState): void {
 }
 
 export function loadLessons(): LessonEntry[] {
-  const current = safeParse<Versioned<LessonEntry[]>>(localStorage.getItem(LESSONS_KEY));
+  const current = safeParse<Versioned<LessonEntry[]>>(
+    localStorage.getItem(LESSONS_KEY),
+  );
   if (current?.version === STORAGE_VERSION) {
     return migrateLessons(current.data);
   }
 
-  const legacy = safeParse<LessonEntry[]>(localStorage.getItem(LEGACY_LESSONS_KEY));
+  const legacy = safeParse<LessonEntry[]>(
+    localStorage.getItem(LEGACY_LESSONS_KEY),
+  );
   if (legacy) return migrateLessons(legacy);
 
   return [];
@@ -138,10 +146,15 @@ export function saveLessons(lessons: LessonEntry[]): void {
 }
 
 export function loadSettings(): AppSettings {
-  const current = safeParse<Versioned<AppSettings>>(localStorage.getItem(SETTINGS_KEY));
-  if (current?.version === STORAGE_VERSION) return migrateSettings(current.data);
+  const current = safeParse<Versioned<AppSettings>>(
+    localStorage.getItem(SETTINGS_KEY),
+  );
+  if (current?.version === STORAGE_VERSION)
+    return migrateSettings(current.data);
 
-  const legacy = safeParse<AppSettings>(localStorage.getItem(LEGACY_SETTINGS_KEY));
+  const legacy = safeParse<AppSettings>(
+    localStorage.getItem(LEGACY_SETTINGS_KEY),
+  );
   if (legacy) return migrateSettings(legacy);
 
   return DEFAULT_SETTINGS;

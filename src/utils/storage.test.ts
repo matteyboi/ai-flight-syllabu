@@ -42,7 +42,10 @@ beforeEach(() => {
 
 describe("storage", () => {
   it("loads legacy app state", () => {
-    const legacy = { students: [{ id: "s1", name: "A" }], selectedStudentId: "s1" };
+    const legacy = {
+      students: [{ id: "s1", name: "A" }],
+      selectedStudentId: "s1",
+    };
     localStorage.setItem("afs_app_state_v4", JSON.stringify(legacy));
 
     const out = loadAppState();
@@ -62,7 +65,7 @@ describe("storage", () => {
           notes: "",
           maneuverScores: [{ maneuverId: "pattern-ops", score: 3 }],
         },
-      ])
+      ]),
     );
 
     const lessons = loadLessons();
@@ -71,7 +74,10 @@ describe("storage", () => {
   });
 
   it("returns default settings when none are stored", () => {
-    expect(loadSettings()).toEqual({ patternOnlyDay: false, recencyWindow: 30 });
+    expect(loadSettings()).toEqual({
+      patternOnlyDay: false,
+      recencyWindow: 30,
+    });
   });
 
   it("round-trips settings", () => {

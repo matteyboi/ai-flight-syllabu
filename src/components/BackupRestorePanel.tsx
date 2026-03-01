@@ -16,14 +16,22 @@ type Props = {
   onRestore: (payload: BackupPayloadV1) => void | Promise<void>;
 };
 
-export function BackupRestorePanel({ appState, lessons, settings, onRestore }: Props) {
+export function BackupRestorePanel({
+  appState,
+  lessons,
+  settings,
+  onRestore,
+}: Props) {
   const [raw, setRaw] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
   const [payload, setPayload] = useState<BackupPayloadV1 | null>(null);
   const [report, setReport] = useState<BackupValidationReport | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const canRestore = useMemo(() => !!payload && !!report && !report.hasCriticalIssues, [payload, report]);
+  const canRestore = useMemo(
+    () => !!payload && !!report && !report.hasCriticalIssues,
+    [payload, report],
+  );
 
   function runValidation(input: string) {
     setParseError(null);
@@ -31,11 +39,15 @@ export function BackupRestorePanel({ appState, lessons, settings, onRestore }: P
     setReport(null);
 
     try {
-      const result = parseAndValidateBackupJson(input, { rejectOnCritical: false });
+      const result = parseAndValidateBackupJson(input, {
+        rejectOnCritical: false,
+      });
       setPayload(result.payload);
       setReport(result.report);
     } catch (err) {
-      setParseError(err instanceof Error ? err.message : "Failed to parse backup.");
+      setParseError(
+        err instanceof Error ? err.message : "Failed to parse backup.",
+      );
     }
   }
 
@@ -75,7 +87,9 @@ export function BackupRestorePanel({ appState, lessons, settings, onRestore }: P
       ? payload.appState.students.length
       : 0;
 
-    const lessonCount = Array.isArray(payload.lessons) ? payload.lessons.length : 0;
+    const lessonCount = Array.isArray(payload.lessons)
+      ? payload.lessons.length
+      : 0;
 
     return {
       exportedAtISO: payload.exportedAtISO,
@@ -131,7 +145,8 @@ export function BackupRestorePanel({ appState, lessons, settings, onRestore }: P
             <li>Unknown student refs: {report.unknownStudentRefs}</li>
           </ul>
           <p>
-            Critical issues: <strong>{report.hasCriticalIssues ? "Yes" : "No"}</strong>
+            Critical issues:{" "}
+            <strong>{report.hasCriticalIssues ? "Yes" : "No"}</strong>
           </p>
         </div>
       )}
@@ -149,7 +164,10 @@ export function BackupRestorePanel({ appState, lessons, settings, onRestore }: P
         </div>
       )}
 
-      <button onClick={() => void onConfirmRestore()} disabled={!canRestore || busy}>
+      <button
+        onClick={() => void onConfirmRestore()}
+        disabled={!canRestore || busy}
+      >
         {busy ? "Restoring..." : "Restore Backup"}
       </button>
     </section>

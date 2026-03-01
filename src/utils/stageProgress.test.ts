@@ -8,7 +8,7 @@ describe("getStageLockReason", () => {
         totalLessons: 2,
         avgScore: 4,
         trend: "Improving",
-      })
+      }),
     ).toBe("Need 3 recent lessons (have 2).");
   });
 
@@ -18,7 +18,7 @@ describe("getStageLockReason", () => {
         totalLessons: 5,
         avgScore: 2.9,
         trend: "Steady",
-      })
+      }),
     ).toBe("Need average score ≥ 3.0.");
   });
 
@@ -28,7 +28,7 @@ describe("getStageLockReason", () => {
         totalLessons: 5,
         avgScore: 3.4,
         trend: "Declining",
-      })
+      }),
     ).toBe("Need trend: Steady or Improving.");
   });
 
@@ -38,7 +38,7 @@ describe("getStageLockReason", () => {
         totalLessons: 5,
         avgScore: 3.4,
         trend: "Steady",
-      })
+      }),
     ).toBe("Complete prior stage requirements first.");
   });
 
@@ -48,7 +48,7 @@ describe("getStageLockReason", () => {
         lessonCount: 1,
         avgScore: 4,
         trend: "Improving",
-      })
+      }),
     ).toBe("Need 2 recent lessons (have 1).");
   });
 });

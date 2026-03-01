@@ -2,7 +2,7 @@ import type { LessonEntry } from "../models/lesson";
 
 function lastNScoresFor(lessons: LessonEntry[], ids: string[], n: number) {
   const sorted = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 
   const scores: number[] = [];
@@ -29,7 +29,7 @@ export const STAGE4_FOUNDATION_IDS = [
 
 export function stage4FoundationPassed(
   lessons: LessonEntry[],
-  windowN: number
+  windowN: number,
 ) {
   const n = Math.max(2, Math.min(8, windowN));
   const scores = lastNScoresFor(lessons, STAGE4_FOUNDATION_IDS, n);

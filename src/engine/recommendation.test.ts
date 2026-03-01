@@ -4,8 +4,18 @@ import { recommendNextLesson } from "./recommendation";
 
 vi.mock("../data/maneuvers", () => ({
   MANEUVERS: [
-    { id: "pattern-ops", name: "Pattern Ops", stage: 1, isSafetyCritical: true },
-    { id: "crosswind-landing", name: "Crosswind Landing", stage: 1, isSafetyCritical: false },
+    {
+      id: "pattern-ops",
+      name: "Pattern Ops",
+      stage: 1,
+      isSafetyCritical: true,
+    },
+    {
+      id: "crosswind-landing",
+      name: "Crosswind Landing",
+      stage: 1,
+      isSafetyCritical: false,
+    },
   ],
   TRAINING_ORDER: ["pattern-ops", "crosswind-landing"],
 }));
@@ -17,7 +27,7 @@ function toManeuverScore(n: number): ManeuverScore {
 let lessonSeq = 0;
 function mkLesson(
   dateISO: string,
-  scores: Array<{ maneuverId: string; score: number }>
+  scores: Array<{ maneuverId: string; score: number }>,
 ): LessonEntry {
   lessonSeq += 1;
   return {

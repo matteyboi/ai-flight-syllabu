@@ -1,4 +1,9 @@
-import { createBackupJson, parseAndValidateBackupJson, parseBackupJson, validateBackupPayload } from "./backup";
+import {
+  createBackupJson,
+  parseAndValidateBackupJson,
+  parseBackupJson,
+  validateBackupPayload,
+} from "./backup";
 import type { AppSettings } from "../models/settings";
 import { describe, expect, it } from "vitest";
 
@@ -119,7 +124,10 @@ describe("backup utils", () => {
       exportedAtISO: new Date().toISOString(),
       appState: basePayload.appState,
       lessons: basePayload.lessons,
-      settings: { patternOnlyDay: true, recencyWindow: Number.POSITIVE_INFINITY },
+      settings: {
+        patternOnlyDay: true,
+        recencyWindow: Number.POSITIVE_INFINITY,
+      },
     });
 
     expect(() => parseBackupJson(raw)).toThrow("Invalid or missing settings.");
@@ -180,7 +188,9 @@ describe("backup utils", () => {
       settings,
     });
 
-    expect(() => parseAndValidateBackupJson(raw)).toThrow("Backup failed validation.");
+    expect(() => parseAndValidateBackupJson(raw)).toThrow(
+      "Backup failed validation.",
+    );
   });
 
   it("parseAndValidateBackupJson can allow critical issues", () => {

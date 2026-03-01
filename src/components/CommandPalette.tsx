@@ -28,7 +28,9 @@ export function CommandPalette({ commands }: Props) {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const isMac = navigator.platform.toLowerCase().includes("mac");
-      const hotkey = isMac ? e.metaKey && e.key.toLowerCase() === "k" : e.ctrlKey && e.key.toLowerCase() === "k";
+      const hotkey = isMac
+        ? e.metaKey && e.key.toLowerCase() === "k"
+        : e.ctrlKey && e.key.toLowerCase() === "k";
 
       if (hotkey) {
         e.preventDefault();

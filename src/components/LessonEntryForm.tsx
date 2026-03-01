@@ -8,15 +8,26 @@ type LessonEntryFormProps = {
   onSubmit: (lesson: Omit<LessonEntry, "id" | "studentId">) => void;
 };
 
-export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntryFormProps) {
-  const [dateISO, setDateISO] = useState(() => new Date().toISOString().slice(0, 10));
+export function LessonEntryForm({
+  recommended,
+  maneuvers,
+  onSubmit,
+}: LessonEntryFormProps) {
+  const [dateISO, setDateISO] = useState(() =>
+    new Date().toISOString().slice(0, 10),
+  );
   const [notes, setNotes] = useState("");
   const [patternOnlyDay, setPatternOnlyDay] = useState(false);
-  const [scoreByManeuverId, setScoreByManeuverId] = useState<Record<string, ManeuverScore | undefined>>({});
+  const [scoreByManeuverId, setScoreByManeuverId] = useState<
+    Record<string, ManeuverScore | undefined>
+  >({});
 
   const sortedManeuvers = useMemo(
-    () => [...maneuvers].sort((a, b) => a.stage - b.stage || a.name.localeCompare(b.name)),
-    [maneuvers]
+    () =>
+      [...maneuvers].sort(
+        (a, b) => a.stage - b.stage || a.name.localeCompare(b.name),
+      ),
+    [maneuvers],
   );
 
   const handleScoreChange = (maneuverId: string, value: string) => {
@@ -77,14 +88,23 @@ export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntr
         gap: 12,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
         <h2
           style={{
             margin: 0,
             fontSize: 16,
             fontWeight: 900,
             letterSpacing: 0.2,
-            background: "linear-gradient(90deg, #7ec8ff 0%, #42a5f5 50%, #1976d2 100%)",
+            background:
+              "linear-gradient(90deg, #7ec8ff 0%, #42a5f5 50%, #1976d2 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
@@ -109,7 +129,13 @@ export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntr
 
       <label style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 13, color: "#bbdefb" }}>Date</span>
-        <input type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} required style={inputBaseStyle} />
+        <input
+          type="date"
+          value={dateISO}
+          onChange={(e) => setDateISO(e.target.value)}
+          required
+          style={inputBaseStyle}
+        />
       </label>
 
       <label style={{ display: "grid", gap: 6 }}>
@@ -119,13 +145,28 @@ export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntr
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
           placeholder="What was practiced? What improved? What needs work?"
-          style={{ ...inputBaseStyle, resize: "vertical", minHeight: 92, lineHeight: 1.4 }}
+          style={{
+            ...inputBaseStyle,
+            resize: "vertical",
+            minHeight: 92,
+            lineHeight: 1.4,
+          }}
         />
       </label>
 
       <div style={{ display: "grid", gap: 8 }}>
-        <span style={{ fontSize: 13, color: "#bbdefb" }}>Maneuver Scores (optional)</span>
-        <div style={{ display: "grid", gap: 8, maxHeight: 260, overflow: "auto", paddingRight: 2 }}>
+        <span style={{ fontSize: 13, color: "#bbdefb" }}>
+          Maneuver Scores (optional)
+        </span>
+        <div
+          style={{
+            display: "grid",
+            gap: 8,
+            maxHeight: 260,
+            overflow: "auto",
+            paddingRight: 2,
+          }}
+        >
           {sortedManeuvers.map((m) => (
             <div
               key={m.id}
@@ -141,7 +182,8 @@ export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntr
               }}
             >
               <div style={{ fontSize: 13 }}>
-                {m.name} <span style={{ opacity: 0.75 }}>(Stage {m.stage})</span>
+                {m.name}{" "}
+                <span style={{ opacity: 0.75 }}>(Stage {m.stage})</span>
               </div>
               <select
                 value={scoreByManeuverId[m.id] ?? ""}
@@ -160,7 +202,9 @@ export function LessonEntryForm({ recommended, maneuvers, onSubmit }: LessonEntr
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 10 }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 10 }}
+      >
         <label
           style={{
             display: "flex",

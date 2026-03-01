@@ -25,5 +25,10 @@ export type LessonEntry = {
 export type SnapshotMetrics = {
   lastLessonDate: string;
   avgScore: number | null;
-  trend: "Improving" | "Declining" | "Steady" | "No trend yet" | "No scores yet";
+  trend:
+    | "Improving"
+    | "Declining"
+    | "Steady"
+    | "No trend yet"
+    | "No scores yet";
 };

@@ -20,7 +20,11 @@ export type BackupValidationReport = {
 };
 
 function hasStringId(v: unknown): v is { id: string } {
-  return typeof v === "object" && v !== null && typeof (v as { id?: unknown }).id === "string";
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    typeof (v as { id?: unknown }).id === "string"
+  );
 }
 
 function hasLessonShape(v: unknown): v is { id: string; studentId: string } {
@@ -59,7 +63,8 @@ function isAppSettings(v: unknown): v is AppSettings {
 
   const keys = Object.keys(v);
   if (keys.length !== 2) return false;
-  if (!keys.includes("patternOnlyDay") || !keys.includes("recencyWindow")) return false;
+  if (!keys.includes("patternOnlyDay") || !keys.includes("recencyWindow"))
+    return false;
 
   const patternOnlyDay = v.patternOnlyDay;
   const recencyWindow = v.recencyWindow;
@@ -136,8 +141,12 @@ export function parseBackupJson(raw: string): BackupPayloadV1 {
   };
 }
 
-export function validateBackupPayload(payload: BackupPayloadV1): BackupValidationReport {
-  const studentsRaw = Array.isArray(payload.appState.students) ? payload.appState.students : [];
+export function validateBackupPayload(
+  payload: BackupPayloadV1,
+): BackupValidationReport {
+  const studentsRaw = Array.isArray(payload.appState.students)
+    ? payload.appState.students
+    : [];
   const lessonsRaw = Array.isArray(payload.lessons) ? payload.lessons : [];
 
   const validStudents = studentsRaw.filter(hasStringId);
@@ -152,7 +161,7 @@ export function validateBackupPayload(payload: BackupPayloadV1): BackupValidatio
   const studentIdSet = new Set(validStudents.map((s) => s.id));
   const unknownStudentRefs = validLessons.reduce(
     (acc, l) => acc + (studentIdSet.has(l.studentId) ? 0 : 1),
-    0
+    0,
   );
 
   const hasCriticalIssues =
@@ -174,7 +183,7 @@ export function validateBackupPayload(payload: BackupPayloadV1): BackupValidatio
 
 export function parseAndValidateBackupJson(
   raw: string,
-  options?: { rejectOnCritical?: boolean }
+  options?: { rejectOnCritical?: boolean },
 ): { payload: BackupPayloadV1; report: BackupValidationReport } {
   const payload = parseBackupJson(raw);
   const report = validateBackupPayload(payload);

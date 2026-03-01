@@ -42,7 +42,8 @@ export function SoloGatePanel({
   const passColor = "#0a7a2f";
   const failColor = "#b00020";
 
-  const canMarkFirstSolo = result.ready && soloEndorsementGiven && !firstSoloCompleted;
+  const canMarkFirstSolo =
+    result.ready && soloEndorsementGiven && !firstSoloCompleted;
 
   return (
     <div
@@ -67,7 +68,8 @@ export function SoloGatePanel({
       >
         <div style={{ fontWeight: 900, fontSize: 16 }}>{result.summary}</div>
         <div style={{ marginTop: 6, opacity: 0.85, fontSize: 13 }}>
-          Rule-based compliance check (not AI). Instructor always has final authority.
+          Rule-based compliance check (not AI). Instructor always has final
+          authority.
         </div>
       </div>
 
@@ -84,9 +86,20 @@ export function SoloGatePanel({
               gap: 4,
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
+            >
               <div style={{ fontWeight: 900 }}>{c.label}</div>
-              <div style={{ fontWeight: 900, color: c.pass ? passColor : failColor }}>
+              <div
+                style={{
+                  fontWeight: 900,
+                  color: c.pass ? passColor : failColor,
+                }}
+              >
                 {c.pass ? "PASS" : "FAIL"}
               </div>
             </div>
@@ -105,13 +118,16 @@ export function SoloGatePanel({
           background: "#fff",
         }}
       >
-        <div style={{ fontWeight: 900, marginBottom: 6 }}>Instructor Endorsement</div>
+        <div style={{ fontWeight: 900, marginBottom: 6 }}>
+          Instructor Endorsement
+        </div>
         <div style={{ fontSize: 13, opacity: 0.9 }}>
           Solo endorsement given: <b>{soloEndorsementGiven ? "Yes" : "No"}</b>
           {soloEndorsementGiven && soloEndorsementDateISO ? (
             <>
               {" "}
-              • Date: <b>{new Date(soloEndorsementDateISO).toLocaleDateString()}</b>
+              • Date:{" "}
+              <b>{new Date(soloEndorsementDateISO).toLocaleDateString()}</b>
             </>
           ) : null}
         </div>
@@ -130,7 +146,9 @@ export function SoloGatePanel({
           background: "#fff",
         }}
       >
-        <div style={{ fontWeight: 900, marginBottom: 6 }}>First Solo (Pattern)</div>
+        <div style={{ fontWeight: 900, marginBottom: 6 }}>
+          First Solo (Pattern)
+        </div>
 
         <div style={{ fontSize: 13, opacity: 0.9 }}>
           Completed: <b>{firstSoloCompleted ? "Yes" : "No"}</b>
@@ -183,7 +201,8 @@ export function SoloGatePanel({
         </div>
 
         <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
-          Stage 4 unlock now requires First Solo completion (more realistic than endorsement alone).
+          Stage 4 unlock now requires First Solo completion (more realistic than
+          endorsement alone).
         </div>
       </div>
     </div>

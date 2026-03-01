@@ -61,11 +61,19 @@ export function StudentHeader({
   unlockedStage,
   patternOnlyDay,
 }: StudentHeaderProps) {
-  const lessonCount = readNumber(snapshotMetrics, ["totalLessons", "lessonCount"]) ?? 0;
+  const lessonCount =
+    readNumber(snapshotMetrics, ["totalLessons", "lessonCount"]) ?? 0;
 
   return (
     <header style={cardStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          alignItems: "center",
+        }}
+      >
         <div>
           <div style={{ fontSize: 40, fontWeight: 700 }}>
             {selectedStudent ? selectedStudent.name : "Flight Syllabus"}
@@ -77,14 +85,18 @@ export function StudentHeader({
           </div>
         </div>
 
-        <div style={{ fontSize: 13, opacity: 0.9 }}>Unlocked Stage: {unlockedStage}</div>
+        <div style={{ fontSize: 13, opacity: 0.9 }}>
+          Unlocked Stage: {unlockedStage}
+        </div>
       </div>
 
       <div style={rowStyle}>
         <span style={chipStyle}>Status: {stagePhaseStatus}</span>
         <span style={chipStyle}>Recommendation: {recommendationLabel}</span>
         <span style={chipStyle}>Lessons: {lessonCount}</span>
-        {patternOnlyDay ? <span style={chipStyle}>Pattern-only day</span> : null}
+        {patternOnlyDay ? (
+          <span style={chipStyle}>Pattern-only day</span>
+        ) : null}
       </div>
     </header>
   );

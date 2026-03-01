@@ -7,7 +7,7 @@ export type StageLockMetrics = {
 
 export function getStageLockReason(
   stageNumber: number,
-  metrics: StageLockMetrics
+  metrics: StageLockMetrics,
 ): string {
   const lessonCount = metrics.totalLessons ?? metrics.lessonCount ?? 0;
   const requiredRecentLessons = Math.max(2, stageNumber - 1);

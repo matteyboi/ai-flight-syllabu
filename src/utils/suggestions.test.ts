@@ -16,7 +16,9 @@ function lesson(partial: Partial<LessonEntry>): LessonEntry {
 
 describe("buildLessonSuggestions", () => {
   it("prioritizes never-practiced maneuvers", () => {
-    const lessons = [lesson({ maneuverScores: [{ maneuverId: "m1", score: 4 }] })];
+    const lessons = [
+      lesson({ maneuverScores: [{ maneuverId: "m1", score: 4 }] }),
+    ];
 
     const result = buildLessonSuggestions({
       studentId: "s1",

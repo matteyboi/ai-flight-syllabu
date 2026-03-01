@@ -19,7 +19,7 @@ describe("TodaysTrainingPlanCard", () => {
         onStartLesson={onStartLesson}
         onSkip={onSkip}
         onMarkComplete={onMarkComplete}
-      />
+      />,
     );
 
     expect(screen.getByText("Today’s Training Plan")).toBeTruthy();

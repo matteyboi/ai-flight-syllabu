@@ -89,13 +89,21 @@ describe("formatRecommendation", () => {
   });
 
   it("returns string recommendations directly", () => {
-    expect(formatRecommendation("Practice steep turns")).toBe("Practice steep turns");
+    expect(formatRecommendation("Practice steep turns")).toBe(
+      "Practice steep turns",
+    );
   });
 
   it("uses first non-empty label field from object", () => {
-    expect(formatRecommendation({ title: "Title A", code: "C1" })).toBe("Title A");
-    expect(formatRecommendation({ lessonTitle: "Lesson B", code: "C2" })).toBe("Lesson B");
-    expect(formatRecommendation({ label: "Label C", code: "C3" })).toBe("Label C");
+    expect(formatRecommendation({ title: "Title A", code: "C1" })).toBe(
+      "Title A",
+    );
+    expect(formatRecommendation({ lessonTitle: "Lesson B", code: "C2" })).toBe(
+      "Lesson B",
+    );
+    expect(formatRecommendation({ label: "Label C", code: "C3" })).toBe(
+      "Label C",
+    );
     expect(formatRecommendation({ code: "C4" })).toBe("C4");
   });
 
@@ -123,7 +131,9 @@ describe("collectManeuvers", () => {
   it("works with null recommended maneuver", () => {
     const m1 = asManeuver("Ground Reference Maneuvers");
 
-    const lessons: LessonEntry[] = [mkLesson({ dateISO: "2026-01-01", maneuvers: [m1] })];
+    const lessons: LessonEntry[] = [
+      mkLesson({ dateISO: "2026-01-01", maneuvers: [m1] }),
+    ];
     expect(collectManeuvers(lessons, null)).toEqual([m1]);
   });
 });

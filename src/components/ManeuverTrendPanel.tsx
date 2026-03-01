@@ -20,7 +20,7 @@ function avg(nums: number[]) {
 function lastNAttemptsForManeuver(
   lessons: LessonEntry[],
   maneuverId: string,
-  n: number
+  n: number,
 ): { score: number; dateISO: string }[] {
   const out: { score: number; dateISO: string }[] = [];
   for (const l of lessons) {
@@ -74,8 +74,14 @@ function trendDetails(scoresNewestFirst: number[]) {
   return { arrow, label, recentAvg, olderAvg, diff };
 }
 
-export function ManeuverTrendPanel({ lessons, unlockedStage, windowSize }: Props) {
-  const maneuvers: Maneuver[] = MANEUVERS.filter((m) => m.stage <= unlockedStage);
+export function ManeuverTrendPanel({
+  lessons,
+  unlockedStage,
+  windowSize,
+}: Props) {
+  const maneuvers: Maneuver[] = MANEUVERS.filter(
+    (m) => m.stage <= unlockedStage,
+  );
 
   return (
     <div
@@ -106,7 +112,9 @@ export function ManeuverTrendPanel({ lessons, unlockedStage, windowSize }: Props
         `}
       </style>
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+      <div
+        style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
+      >
         <h2 style={{ margin: 0, letterSpacing: -0.2 }}>Maneuver Trends</h2>
         <div style={{ fontSize: 12, opacity: 0.8, alignSelf: "center" }}>
           Showing last <b>{windowSize}</b> attempts per maneuver
@@ -137,7 +145,9 @@ export function ManeuverTrendPanel({ lessons, unlockedStage, windowSize }: Props
               >
                 <div style={{ fontWeight: 950 }}>{m.name}</div>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>No scores yet</div>
-                <div style={{ textAlign: "right", fontWeight: 950, opacity: 0.7 }}>
+                <div
+                  style={{ textAlign: "right", fontWeight: 950, opacity: 0.7 }}
+                >
                   —
                 </div>
               </div>
@@ -149,8 +159,7 @@ export function ManeuverTrendPanel({ lessons, unlockedStage, windowSize }: Props
 
           const recentStr =
             td.recentAvg === null ? "—" : td.recentAvg.toFixed(1);
-          const olderStr =
-            td.olderAvg === null ? "—" : td.olderAvg.toFixed(1);
+          const olderStr = td.olderAvg === null ? "—" : td.olderAvg.toFixed(1);
 
           return (
             <div
@@ -188,7 +197,8 @@ export function ManeuverTrendPanel({ lessons, unlockedStage, windowSize }: Props
                   ) : null}
                 </div>
                 <div style={{ fontSize: 12, opacity: 0.78, marginTop: 2 }}>
-                  Stage {m.stage} • Avg(last {attempts.length}) = <b>{displayAvg}</b>
+                  Stage {m.stage} • Avg(last {attempts.length}) ={" "}
+                  <b>{displayAvg}</b>
                 </div>
               </div>
 

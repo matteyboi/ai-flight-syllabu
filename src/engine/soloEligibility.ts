@@ -20,7 +20,12 @@ type Inputs = {
   tsaA14: boolean;
 };
 
-const PATTERN_IDS = ["pattern-ops", "normal-takeoff", "normal-landing", "go-around"];
+const PATTERN_IDS = [
+  "pattern-ops",
+  "normal-takeoff",
+  "normal-landing",
+  "go-around",
+];
 const EMERGENCY_IDS = ["emergencies"];
 const STALL_IDS = ["stalls"];
 
@@ -42,14 +47,18 @@ function scoresFor(lessons: LessonEntry[], ids: string[]) {
 
 function lastScoreFor(lessons: LessonEntry[], ids: string[]) {
   const sorted = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 
   for (const l of sorted) {
     // for a group (pattern/stalls/emergencies), return the FIRST matching score we find
     for (const ms of l.maneuverScores) {
       if (ids.includes(ms.maneuverId)) {
-        return { score: ms.score, dateISO: l.dateISO, maneuverId: ms.maneuverId };
+        return {
+          score: ms.score,
+          dateISO: l.dateISO,
+          maneuverId: ms.maneuverId,
+        };
       }
     }
   }
@@ -71,10 +80,10 @@ function maneuverName(id: string) {
  */
 function recentSafetyCriticalWeakness(
   lessons: LessonEntry[],
-  recentLessonCount: number
+  recentLessonCount: number,
 ) {
   const sorted = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
   const recent = sorted.slice(0, recentLessonCount);
 
@@ -140,7 +149,9 @@ export function evaluateSoloEligibility(input: Inputs): SoloEligibilityResult {
     label: "Pattern proficiency stable (avg ≥ 4 AND last ≥ 4)",
     pass: (patternAvg ?? 0) >= 4 && (patternLast?.score ?? 0) >= 4,
     detail: `Avg: ${formatAvg(patternAvg)} • Last: ${
-      patternLast ? `${patternLast.score} (${maneuverName(patternLast.maneuverId)})` : "N/A"
+      patternLast
+        ? `${patternLast.score} (${maneuverName(patternLast.maneuverId)})`
+        : "N/A"
     }`,
   });
 

@@ -19,7 +19,7 @@ function avg(nums: number[]) {
 function recentScoresFor(
   lessons: LessonEntry[],
   maneuverId: string,
-  n: number
+  n: number,
 ): number[] {
   const out: number[] = [];
   for (const l of lessons) {
@@ -61,11 +61,15 @@ export function recommendNextLesson(input: Inputs): {
   const { lessons, unlockedStage, patternOnlyDay, recencyWindow } = input;
 
   const library = MANEUVERS.filter(
-    (m) => m.stage <= unlockedStage && isAllowedByPatternOnly(m.id, patternOnlyDay)
+    (m) =>
+      m.stage <= unlockedStage && isAllowedByPatternOnly(m.id, patternOnlyDay),
   );
 
   if (library.length === 0) {
-    return { maneuver: null, reason: "No maneuvers available for current gates." };
+    return {
+      maneuver: null,
+      reason: "No maneuvers available for current gates.",
+    };
   }
 
   // Use TRAINING_ORDER to walk in a logical order
@@ -113,7 +117,7 @@ export function recommendNextLesson(input: Inputs): {
         recentAvg: a,
         recentScores: scores,
         reason: `Recent avg (last ${scores.length}) is ${a!.toFixed(
-          2
+          2,
         )} (<4). Last score ${lastScore}.`,
         priority: basePriority + bump,
       });
@@ -125,7 +129,7 @@ export function recommendNextLesson(input: Inputs): {
         recentAvg: a,
         recentScores: scores,
         reason: `Recent avg (last ${scores.length}) is ${a!.toFixed(
-          2
+          2,
         )} (≥4). Maintain ≥4 before advancing.`,
         priority: basePriority,
       });

@@ -13,7 +13,9 @@ type ComputeSnapshotMetricsInput =
       selectedStudent?: unknown; // accepted but not required by metrics computation
     };
 
-export function computeSnapshotMetrics(input: ComputeSnapshotMetricsInput): SnapshotMetrics {
+export function computeSnapshotMetrics(
+  input: ComputeSnapshotMetricsInput,
+): SnapshotMetrics {
   const lessons = Array.isArray(input) ? input : input.lessons;
 
   if (lessons.length === 0) {
@@ -25,7 +27,7 @@ export function computeSnapshotMetrics(input: ComputeSnapshotMetricsInput): Snap
   }
 
   const sorted = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 
   const lastDate = new Date(sorted[0].dateISO);
@@ -49,8 +51,12 @@ export function computeSnapshotMetrics(input: ComputeSnapshotMetricsInput): Snap
   const recent = scored.slice(0, 3);
   const prior = scored.slice(3, 6);
 
-  const recentAvg = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : avgScore;
-  const priorAvg = prior.length ? prior.reduce((a, b) => a + b, 0) / prior.length : recentAvg;
+  const recentAvg = recent.length
+    ? recent.reduce((a, b) => a + b, 0) / recent.length
+    : avgScore;
+  const priorAvg = prior.length
+    ? prior.reduce((a, b) => a + b, 0) / prior.length
+    : recentAvg;
 
   const delta = recentAvg - priorAvg;
   const trend = delta >= 2 ? "Improving" : delta <= -2 ? "Declining" : "Steady";
@@ -64,7 +70,7 @@ export function formatRecommendation(rec: unknown): string {
   if (typeof rec === "object") {
     const r = rec as Record<string, unknown>;
     const label = [r.title, r.lessonTitle, r.label, r.code].find(
-      (v): v is string => typeof v === "string" && v.trim().length > 0
+      (v): v is string => typeof v === "string" && v.trim().length > 0,
     );
     if (label) return label;
   }
@@ -79,7 +85,7 @@ function getLessonManeuvers(lesson: LessonEntry): Maneuver[] {
 
 export function collectManeuvers(
   lessons: LessonEntry[],
-  recommendedManeuver: Maneuver | null
+  recommendedManeuver: Maneuver | null,
 ): Maneuver[] {
   const set = new Set<Maneuver>();
   lessons.forEach((l) => getLessonManeuvers(l).forEach((m) => set.add(m)));

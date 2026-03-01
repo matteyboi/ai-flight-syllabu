@@ -23,9 +23,13 @@ function avg(nums: number[]) {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-function recentScoresFor(lessons: LessonEntry[], ids: string[], n: number): number[] {
+function recentScoresFor(
+  lessons: LessonEntry[],
+  ids: string[],
+  n: number,
+): number[] {
   const sorted = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 
   const out: number[] = [];
@@ -40,7 +44,12 @@ function recentScoresFor(lessons: LessonEntry[], ids: string[], n: number): numb
   return out;
 }
 
-const PATTERN_IDS = ["pattern-ops", "normal-takeoff", "normal-landing", "go-around"];
+const PATTERN_IDS = [
+  "pattern-ops",
+  "normal-takeoff",
+  "normal-landing",
+  "go-around",
+];
 const EMERGENCY_IDS = ["emergencies"];
 
 const PATTERN_WINDOW = 6;
@@ -66,7 +75,11 @@ export function getStageReasons(input: Inputs): StageReason[] {
   // Stage 3 lock reasons
   if (unlockedStage < 3) {
     const patternRecent = recentScoresFor(lessons, PATTERN_IDS, PATTERN_WINDOW);
-    const emergencyRecent = recentScoresFor(lessons, EMERGENCY_IDS, EMERGENCY_WINDOW);
+    const emergencyRecent = recentScoresFor(
+      lessons,
+      EMERGENCY_IDS,
+      EMERGENCY_WINDOW,
+    );
 
     const patternAvg = avg(patternRecent);
     const emergencyAvg = avg(emergencyRecent);
@@ -104,11 +117,19 @@ export function getStageReasons(input: Inputs): StageReason[] {
   }
 
   if (unlockedStage < 6) {
-    reasons.push({ stage: 6, bullets: ["(Next) Cross-country phase requirements will be defined here."] });
+    reasons.push({
+      stage: 6,
+      bullets: [
+        "(Next) Cross-country phase requirements will be defined here.",
+      ],
+    });
   }
 
   if (unlockedStage < 7) {
-    reasons.push({ stage: 7, bullets: ["(Next) Checkride prep requirements will be defined here."] });
+    reasons.push({
+      stage: 7,
+      bullets: ["(Next) Checkride prep requirements will be defined here."],
+    });
   }
 
   return reasons;

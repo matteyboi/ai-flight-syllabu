@@ -11,7 +11,11 @@ function avg(nums: number[]) {
   return sum / nums.length;
 }
 
-function lastNScoresFor(lessonsNewestFirst: LessonEntry[], ids: string[], n: number) {
+function lastNScoresFor(
+  lessonsNewestFirst: LessonEntry[],
+  ids: string[],
+  n: number,
+) {
   const out: number[] = [];
 
   // lessons are newest-first already in App.tsx
@@ -26,20 +30,36 @@ function lastNScoresFor(lessonsNewestFirst: LessonEntry[], ids: string[], n: num
 }
 
 // Must match src/data/maneuvers.ts
-const PATTERN_IDS = ["pattern-ops", "normal-takeoff", "normal-landing", "go-around"];
+const PATTERN_IDS = [
+  "pattern-ops",
+  "normal-takeoff",
+  "normal-landing",
+  "go-around",
+];
 const EMERGENCY_IDS = ["emergencies"];
 
 // ✅ Rolling window size for gates
 const GATE_WINDOW = 6;
 
-export function computeUnlockedStage(lessonsNewestFirst: LessonEntry[], gates: GateInputs): number {
+export function computeUnlockedStage(
+  lessonsNewestFirst: LessonEntry[],
+  gates: GateInputs,
+): number {
   let stage = 1;
 
   // Stage 2 once any lesson exists
   if (lessonsNewestFirst.length > 0) stage = 2;
 
-  const patternScores = lastNScoresFor(lessonsNewestFirst, PATTERN_IDS, GATE_WINDOW);
-  const emergencyScores = lastNScoresFor(lessonsNewestFirst, EMERGENCY_IDS, GATE_WINDOW);
+  const patternScores = lastNScoresFor(
+    lessonsNewestFirst,
+    PATTERN_IDS,
+    GATE_WINDOW,
+  );
+  const emergencyScores = lastNScoresFor(
+    lessonsNewestFirst,
+    EMERGENCY_IDS,
+    GATE_WINDOW,
+  );
 
   const patternAvg = avg(patternScores);
   const emergencyAvg = avg(emergencyScores);

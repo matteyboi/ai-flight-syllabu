@@ -72,7 +72,13 @@ export function StudentRoster({
         flexDirection: "column",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <h2
           style={{
             margin: 0,
@@ -96,7 +102,9 @@ export function StudentRoster({
             <li
               key={student.id}
               style={{
-                background: isSelected ? "linear-gradient(90deg, #42a5f5 0%, #1976d2 100%)" : "#1b2a4a",
+                background: isSelected
+                  ? "linear-gradient(90deg, #42a5f5 0%, #1976d2 100%)"
+                  : "#1b2a4a",
                 color: isSelected ? "#fff" : "#e3f2fd",
                 borderRadius: 7,
                 padding: "8px 10px",
@@ -108,13 +116,22 @@ export function StudentRoster({
                 fontWeight: 700,
                 fontSize: 14,
                 boxShadow: isSelected ? "0 0 6px #42a5f544" : undefined,
-                border: isSelected ? "2px solid #1976d2" : "2px solid transparent",
+                border: isSelected
+                  ? "2px solid #1976d2"
+                  : "2px solid transparent",
                 gap: 10,
               }}
               onClick={() => !isEditing && onSelect(student.id)}
             >
               {isEditing ? (
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
                   <input
                     value={editName}
                     onClick={(e) => e.stopPropagation()}
@@ -131,7 +148,9 @@ export function StudentRoster({
                   <select
                     value={editLicense}
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => setEditLicense(e.target.value as LicenseType)}
+                    onChange={(e) =>
+                      setEditLicense(e.target.value as LicenseType)
+                    }
                     style={{
                       padding: 8,
                       borderRadius: 6,
@@ -149,7 +168,12 @@ export function StudentRoster({
               ) : (
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
-                    style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 14 }}
+                    style={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 14,
+                    }}
                   >
                     {student.name}
                   </div>

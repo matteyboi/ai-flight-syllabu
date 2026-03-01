@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { RecentLessonsPanel } from "./components/RecentLessonsPanel";
 import { StudentRoster } from "./components/StudentRoster";
@@ -21,7 +27,14 @@ import {
   formatRecommendation,
 } from "./utils/appHelpers";
 import { getStageLockReason } from "./utils/stageProgress";
-import { loadAppState, loadLessons, saveAppState, saveLessons, loadSettings, saveSettings } from "./utils/storage";
+import {
+  loadAppState,
+  loadLessons,
+  saveAppState,
+  saveLessons,
+  loadSettings,
+  saveSettings,
+} from "./utils/storage";
 import {
   createBackupJson,
   parseBackupJson,
@@ -64,19 +77,13 @@ const lockedChipStyle: CSSProperties = {
   color: "#d1d5db",
 };
 
-const lockedReasonStyle: CSSProperties = {
-  marginTop: 6,
-  fontSize: 12,
-  color: "#fca5a5",
-};
-
 function App() {
   const initial = useMemo(() => loadAppState(), []);
   const initialSettings = useMemo(() => loadSettings(), []);
 
   const [students, setStudents] = useState<Student[]>(initial.students);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
-    initial.selectedStudentId
+    initial.selectedStudentId,
   );
   const [selectedStage, setSelectedStage] = useState<number>(1);
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
@@ -88,7 +95,8 @@ function App() {
     validation: BackupValidationReport;
   } | null>(null);
 
-  const [lastImportSnapshot, setLastImportSnapshot] = useState<ImportSnapshot | null>(null);
+  const [lastImportSnapshot, setLastImportSnapshot] =
+    useState<ImportSnapshot | null>(null);
 
   const applySnapshot = (snapshot: ImportSnapshot): void => {
     setStudents(snapshot.appState.students);
@@ -151,10 +159,16 @@ function App() {
     setSelectedStudentId(student.id);
   };
 
-  const handleEditStudent = (id: string, name: string, license: LicenseType) => {
+  const handleEditStudent = (
+    id: string,
+    name: string,
+    license: LicenseType,
+  ) => {
     const now = new Date().toISOString();
     setStudents((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, name, license, updatedAtISO: now } : s))
+      prev.map((s) =>
+        s.id === id ? { ...s, name, license, updatedAtISO: now } : s,
+      ),
     );
   };
 
@@ -163,7 +177,9 @@ function App() {
     if (!ok) return;
 
     setStudents((prev) => prev.filter((s) => s.id !== id));
-    setSelectedStudentId((prevSelected) => (prevSelected === id ? null : prevSelected));
+    setSelectedStudentId((prevSelected) =>
+      prevSelected === id ? null : prevSelected,
+    );
     setLessons((prev) => prev.filter((l) => l.studentId !== id));
   };
 
@@ -194,7 +210,8 @@ function App() {
       const validation = validateBackupPayload(payload);
       setPendingImport({ fileName: file.name, payload, validation });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to import backup.";
+      const message =
+        err instanceof Error ? err.message : "Failed to import backup.";
       window.alert(message);
     }
   };
@@ -221,13 +238,16 @@ function App() {
     setPendingImport(null);
   }
 
-  const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
+  const selectedStudent =
+    students.find((s) => s.id === selectedStudentId) ?? null;
 
   const studentLessons = useMemo(() => {
     if (!selectedStudent) return [];
     return lessons
       .filter((l) => l.studentId === selectedStudent.id)
-      .sort((a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime());
+      .sort(
+        (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
+      );
   }, [lessons, selectedStudent]);
 
   const currentStatus: LessonStatus | null = studentLessons[0]?.status ?? null;
@@ -260,7 +280,7 @@ function App() {
 
   const snapshotMetrics = useMemo(
     () => computeSnapshotMetrics(studentLessons),
-    [studentLessons]
+    [studentLessons],
   );
 
   const metrics: SnapshotMetrics = snapshotMetrics;
@@ -273,14 +293,20 @@ function App() {
       patternOnlyDay,
       recencyWindow,
     });
-  }, [selectedStudent, studentLessons, unlockedStage, patternOnlyDay, recencyWindow]);
+  }, [
+    selectedStudent,
+    studentLessons,
+    unlockedStage,
+    patternOnlyDay,
+    recencyWindow,
+  ]);
 
   const recommendationLabel = formatRecommendation(recommendation);
   const recommendedManeuver: Maneuver | null = recommendation?.maneuver ?? null;
 
   const maneuvers: Maneuver[] = useMemo(
     () => collectManeuvers(lessons, recommendedManeuver),
-    [lessons, recommendedManeuver]
+    [lessons, recommendedManeuver],
   );
 
   const handleAddLesson = (input: Omit<LessonEntry, "id" | "studentId">) => {
@@ -297,13 +323,15 @@ function App() {
 
   const isStageLocked = useCallback(
     (stageNumber: number) => stageNumber > unlockedStage,
-    [unlockedStage]
+    [unlockedStage],
   );
 
   const stageLockReasons = useMemo(() => {
     return STAGES.reduce<Record<number, string>>((acc, stage) => {
       const locked = isStageLocked(stage.stageNumber);
-      acc[stage.stageNumber] = locked ? getStageLockReason(stage.stageNumber, metrics) : "";
+      acc[stage.stageNumber] = locked
+        ? getStageLockReason(stage.stageNumber, metrics)
+        : "";
       return acc;
     }, {});
   }, [isStageLocked, metrics]);
@@ -326,6 +354,7 @@ function App() {
           background: "rgba(20,30,60,0.98)",
           boxShadow: "0 8px 32px 0 #1976d244",
           backdropFilter: "blur(8px)",
+          paddingBottom: selectedStudent ? 110 : 16, // leaves room for fixed bottom tabs
         }}
       >
         <StudentHeader
@@ -354,7 +383,9 @@ function App() {
               : null
           }
           importValidation={pendingImport?.validation ?? null}
-          canConfirmImport={pendingImport ? !pendingImport.validation.hasCriticalIssues : false}
+          canConfirmImport={
+            pendingImport ? !pendingImport.validation.hasCriticalIssues : false
+          }
           onConfirmImport={handleConfirmImport}
           onCancelImport={handleCancelImport}
           canUndoImport={Boolean(lastImportSnapshot)}
@@ -391,12 +422,20 @@ function App() {
                 />
 
                 {currentStatus ? (
-                  <StageProgressPanel unlockedStage={unlockedStage} status={currentStatus} />
+                  <StageProgressPanel
+                    unlockedStage={unlockedStage}
+                    status={currentStatus}
+                  />
                 ) : (
-                  <div style={noticeCardStyle}>Log a lesson to see stage status.</div>
+                  <div style={noticeCardStyle}>
+                    Log a lesson to see stage status.
+                  </div>
                 )}
 
-                <RecentLessonsPanel lessons={studentLessons} onDeleteLesson={handleDeleteLesson} />
+                <RecentLessonsPanel
+                  lessons={studentLessons}
+                  onDeleteLesson={handleDeleteLesson}
+                />
                 <WeakestManeuversPanel lessons={studentLessons} />
               </>
             )}
@@ -405,56 +444,83 @@ function App() {
 
         <div style={{ marginTop: 20 }}>
           {selectedStudent ? (
-            <>
-              <div style={{ marginBottom: 8, color: "#bfdbfe", fontSize: 13 }}>
-                Selected Stage: {selectedStage}
+            <div
+              style={{
+                position: "fixed",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1000,
+                borderTop: "1px solid #42a5f544",
+                background: "rgba(15, 23, 42, 0.96)",
+                backdropFilter: "blur(8px)",
+                padding: "10px 12px calc(10px + env(safe-area-inset-bottom))",
+              }}
+            >
+              <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+                <div
+                  style={{ marginBottom: 6, color: "#bfdbfe", fontSize: 12 }}
+                >
+                  Selected Stage: {selectedStage}
+                </div>
+
+                <div
+                  role="tablist"
+                  aria-label="Flight training stages"
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    overflowX: "auto",
+                    paddingBottom: 2,
+                  }}
+                >
+                  {STAGES.map((stage) => {
+                    const locked = isStageLocked(stage.stageNumber);
+                    const isSelected = selectedStage === stage.stageNumber;
+                    const lockReason =
+                      stageLockReasons[stage.stageNumber] ?? "";
+
+                    return (
+                      <button
+                        key={stage.stageNumber}
+                        role="tab"
+                        aria-selected={isSelected}
+                        type="button"
+                        disabled={locked}
+                        title={locked ? lockReason : `Go to ${stage.title}`}
+                        onClick={() => {
+                          if (locked) return;
+                          setSelectedStage(stage.stageNumber);
+                        }}
+                        style={{
+                          flex: "1 0 140px",
+                          textAlign: "center",
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: isSelected
+                            ? "1px solid #93c5fd"
+                            : "1px solid #42a5f544",
+                          background: locked
+                            ? "#1f2937"
+                            : isSelected
+                              ? "#1d4ed8"
+                              : "#1f3a66",
+                          color: locked ? "#9ca3af" : "#dbeafe",
+                          cursor: locked ? "not-allowed" : "pointer",
+                          opacity: locked ? 0.75 : 1,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {stage.stageNumber}. {stage.title}
+                        {locked ? (
+                          <span style={lockedChipStyle}> Locked</span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-
-              {STAGES.map((stage) => {
-                const locked = isStageLocked(stage.stageNumber);
-                const isSelected = selectedStage === stage.stageNumber;
-                const lockReason = stageLockReasons[stage.stageNumber] ?? "";
-
-                return (
-                  <div key={stage.stageNumber} style={{ marginBottom: 10 }}>
-                    <button
-                      type="button"
-                      disabled={locked}
-                      title={lockReason}
-                      onClick={() => {
-                        if (locked) return;
-                        setSelectedStage(stage.stageNumber);
-                      }}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        border: isSelected ? "1px solid #93c5fd" : "1px solid #42a5f544",
-                        background: locked ? "#1f2937" : isSelected ? "#1d4ed8" : "#1f3a66",
-                        color: locked ? "#9ca3af" : "#dbeafe",
-                        cursor: locked ? "not-allowed" : "pointer",
-                        opacity: locked ? 0.75 : 1,
-                      }}
-                    >
-                      Stage {stage.stageNumber}: {stage.title}
-                      {locked ? <span style={lockedChipStyle}>Locked</span> : null}
-                    </button>
-
-                    {locked ? <div style={lockedReasonStyle}>{lockReason}</div> : null}
-                  </div>
-                );
-              })}
-
-              <div style={noticeCardStyle}>
-                <p>
-                  <strong>Next recommendation:</strong> {recommendationLabel}
-                </p>
-                <p>
-                  <strong>Recommended maneuver:</strong> {recommendedManeuver?.name ?? "No recommendation yet"}
-                </p>
-              </div>
-            </>
+            </div>
           ) : null}
         </div>
       </div>

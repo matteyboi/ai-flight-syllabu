@@ -30,7 +30,7 @@ const GROUPS = [
 
 function lessonsNewestFirst(lessons: LessonEntry[]) {
   return [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 }
 
@@ -80,7 +80,8 @@ export function FoundationGatePanel({ lessons, foundationWindow }: Props) {
       <h2 style={{ marginTop: 0 }}>Advanced Maneuver Gate (Stage 4)</h2>
 
       <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 10 }}>
-        Uses last <b>{foundationWindow}</b> attempts. Requirement: each foundation average ≥ <b>4.00</b>.
+        Uses last <b>{foundationWindow}</b> attempts. Requirement: each
+        foundation average ≥ <b>4.00</b>.
       </div>
 
       <div
@@ -93,7 +94,10 @@ export function FoundationGatePanel({ lessons, foundationWindow }: Props) {
         }}
       >
         <div style={{ fontWeight: 900 }}>
-          Status: {allOk ? "✅ Foundation met — Stage 4 advanced allowed" : "🔒 Foundation not met — Stage 4 advanced blocked"}
+          Status:{" "}
+          {allOk
+            ? "✅ Foundation met — Stage 4 advanced allowed"
+            : "🔒 Foundation not met — Stage 4 advanced blocked"}
         </div>
         {!allOk ? (
           <div style={{ marginTop: 4, opacity: 0.85 }}>

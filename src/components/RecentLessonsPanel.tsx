@@ -5,9 +5,12 @@ type RecentLessonsPanelProps = {
   onDeleteLesson: (lessonId: string) => void;
 };
 
-export function RecentLessonsPanel({ lessons, onDeleteLesson }: RecentLessonsPanelProps) {
+export function RecentLessonsPanel({
+  lessons,
+  onDeleteLesson,
+}: RecentLessonsPanelProps) {
   const sortedLessons = [...lessons].sort(
-    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime()
+    (a, b) => new Date(b.dateISO).getTime() - new Date(a.dateISO).getTime(),
   );
 
   return (
@@ -33,7 +36,15 @@ export function RecentLessonsPanel({ lessons, onDeleteLesson }: RecentLessonsPan
         Recent Lessons
       </h2>
 
-      <div style={{ marginTop: 8, color: "#e3f2fd", fontSize: 14, display: "grid", gap: 8 }}>
+      <div
+        style={{
+          marginTop: 8,
+          color: "#e3f2fd",
+          fontSize: 14,
+          display: "grid",
+          gap: 8,
+        }}
+      >
         {sortedLessons.length === 0 ? (
           <div style={{ opacity: 0.8 }}>No lessons yet</div>
         ) : (
@@ -51,7 +62,8 @@ export function RecentLessonsPanel({ lessons, onDeleteLesson }: RecentLessonsPan
               }}
             >
               <div>
-                {new Date(lesson.dateISO).toLocaleDateString()} ({lesson.notes || "No notes"})
+                {new Date(lesson.dateISO).toLocaleDateString()} (
+                {lesson.notes || "No notes"})
               </div>
               <button
                 type="button"
