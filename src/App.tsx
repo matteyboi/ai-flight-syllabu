@@ -925,10 +925,12 @@ export default function App() {
 
     setStageProgress((prev) => {
       const studentMap = prev[studentId] ?? {};
-      const { [key]: _removed, ...rest } = studentMap;
+      const nextStudentMap = { ...studentMap };
+      delete nextStudentMap[key];
+
       return {
         ...prev,
-        [studentId]: rest,
+        [studentId]: nextStudentMap,
       };
     });
   }
