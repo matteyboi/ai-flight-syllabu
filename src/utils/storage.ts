@@ -68,7 +68,6 @@ function migrateLesson(raw: unknown): LessonEntry | null {
     status,
     patternOnlyDay,
     maneuverScores,
-    maneuver: undefined,
   };
 }
 
