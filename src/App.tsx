@@ -601,6 +601,14 @@ function StagesPage({
   const firstIncompleteId =
     STAGE_DEFS.find((s) => !isStageComplete(s.id, s.requirements))?.id ?? null;
 
+  const currentStage =
+    STAGE_DEFS.find((s) => s.id === firstIncompleteId) ?? null;
+
+  const canCompleteCurrentStage =
+    canEdit &&
+    firstIncompleteId !== null &&
+    (currentStage ? totalLessons >= currentStage.minLessons : false);
+
   const totalReqs = STAGE_DEFS.reduce(
     (sum, s) => sum + s.requirements.length,
     0,
@@ -693,7 +701,7 @@ function StagesPage({
           <button
             type="button"
             className="primary-btn"
-            disabled={!canEdit || firstIncompleteId === null}
+            disabled={!canCompleteCurrentStage}
             onClick={() => {
               if (firstIncompleteId !== null)
                 onCompleteStage(firstIncompleteId);
