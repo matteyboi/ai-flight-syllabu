@@ -1017,6 +1017,11 @@ export default function App() {
       return;
     }
 
+    const ok = window.confirm(
+      `Mark "${stage.title}" complete for ${selectedStudent.name}?`,
+    );
+    if (!ok) return;
+
     const studentId = selectedStudent.id;
     const key = String(stageId);
 
